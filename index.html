@@ -1,0 +1,3567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowPilot — Workflow and Project Management for Modern Teams</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+:root {
+  --bg:              #F8FBFE;
+  --bg-warm:         #F0F7FC;
+  --bg-card:         #ffffff;
+  --text-primary:    #0d0d0d;
+  --text-secondary:  #4a4a4a;
+  --text-muted:      #8a8080;
+  --accent:          #9AD3F2;
+  --accent-light:    #C4E6F8;
+  --accent-deep:     #78BDE6;
+  --accent-glow:     rgba(154,211,242,0.25);
+  --lavender-soft:   #EAF6FD;
+  --accent-ink:      #5B9BC9;
+  --on-accent:       #23212B;
+  --lavender-border: rgba(154,211,242,0.2);
+  --border:          rgba(13,13,13,0.08);
+  --border-strong:   rgba(13,13,13,0.15);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-md: 0 8px 40px rgba(0,0,0,0.10);
+  --shadow-lg: 0 24px 80px rgba(0,0,0,0.12);
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-serif:   'Cormorant Garamond', serif;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --nav-h:     76px;
+  --transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-display);
+  background: var(--bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  line-height: 1.6;
+  cursor: none;
+}
+a  { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img, video { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: none; border: none; background: none; }
+em { font-family: var(--font-serif); font-style: italic; font-weight: 300; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+.cursor-dot {
+  position: fixed; width: 8px; height: 8px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width .2s, height .2s, background .2s;
+  will-change: left, top;
+}
+.cursor-ring {
+  position: fixed; width: 36px; height: 36px;
+  border: 1.5px solid var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%); opacity: 0.6;
+  will-change: left, top;
+}
+
+.scroll-large-text {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 120%); 
+  font-family: var(--font-display);
+  font-size: clamp(6rem, 24vw, 26rem); 
+  font-weight: 900;
+  letter-spacing: -0.05em;
+
+  color: rgba(230, 230, 250, 0.25); 
+
+  -webkit-text-stroke: 2px #000000; 
+
+  text-shadow: 0 0 20px rgba(186, 85, 211, 0.2);
+
+  white-space: nowrap;
+  z-index: 1; 
+  pointer-events: none; 
+  will-change: transform;
+}
+
+.section-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--accent-ink);
+  background: var(--lavender-soft);
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--lavender-border); margin-bottom: 1.2rem;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  font-weight: 700; line-height: 1.15;
+  letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 1rem;
+}
+.section-subtitle {
+  font-size: clamp(0.88rem, 1.5vw, 1rem);
+  color: var(--text-secondary); max-width: 480px; line-height: 1.7;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--text-primary); color: var(--bg);
+  font-family: var(--font-display); font-size: 0.88rem;
+  font-weight: 600; letter-spacing: 0.01em;
+  padding: 14px 26px; border-radius: 100px;
+  border: none; cursor: none; transition: var(--transition);
+  position: relative; overflow: hidden;
+}
+.btn-primary::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94); z-index: 0;
+}
+.btn-primary:hover::before { transform: scaleX(1); }
+.btn-primary span, .btn-primary .btn-arrow { position: relative; z-index: 1; }
+.btn-primary:hover { color: var(--text-primary); }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--text-primary);
+  font-family: var(--font-display); font-size: 0.88rem; font-weight: 500;
+  padding: 14px 26px; border-radius: 100px;
+  border: 1.5px solid var(--border-strong); cursor: none; transition: var(--transition);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent-ink); background: var(--lavender-soft); }
+
+.nav-header {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000; padding: 12px 24px; transition: var(--transition);
+}
+.nav-header.scrolled {
+  background: rgba(248,251,254,0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm); padding: 8px 24px;
+}
+.nav-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between; height: 52px;
+}
+.nav-logo {
+  font-family: var(--font-display); font-size: 1.35rem;
+  font-weight: 800; letter-spacing: -0.04em; color: var(--text-primary);
+  display: flex; align-items: center;
+}
+
+.nav-links { display: flex; align-items: center; gap: 2rem; }
+.nav-link { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); position: relative; transition: color 0.3s; }
+.nav-link::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 1.5px; background: var(--accent);
+  transform: scaleX(0); transition: transform 0.3s ease;
+}
+.nav-link:hover, .nav-link.active { color: var(--text-primary); }
+.nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
+
+.nav-cta-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--text-primary); color: var(--bg);
+  font-size: 0.82rem; font-weight: 600;
+  padding: 10px 20px; border-radius: 100px;
+  transition: var(--transition); cursor: none;
+}
+.nav-cta-btn:hover { background: var(--accent-deep); transform: translateY(-1px); box-shadow: 0 8px 24px var(--accent-glow); }
+
+.nav-hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: none; padding: 6px;
+}
+.nav-hamburger span {
+  display: block; width: 24px; height: 1.5px;
+  background: var(--text-primary); transition: var(--transition); transform-origin: center;
+}
+.nav-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.nav-hamburger.active span:nth-child(2) { opacity: 0; }
+.nav-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+
+.nav-mobile-menu {
+  display: none; position: absolute;
+  top: calc(100% + 8px); left: 16px; right: 16px;
+  background: rgba(248,251,254,0.98); backdrop-filter: blur(20px);
+  border-radius: var(--radius-md); border: 1px solid var(--border);
+  box-shadow: var(--shadow-md); padding: 1rem 0;
+  opacity: 0; pointer-events: none; transform: translateY(-8px); transition: var(--transition);
+}
+.nav-mobile-menu.open { opacity: 1; pointer-events: all; transform: translateY(0); }
+.nav-mobile-menu ul { padding: 0.5rem 0; }
+.nav-mobile-menu a {
+  display: block; padding: 0.75rem 1.5rem;
+  font-size: 0.95rem; font-weight: 500; color: var(--text-primary); transition: color 0.2s;
+}
+.nav-mobile-menu a:hover { color: var(--accent-ink); }
+
+.hero {
+  position: relative; min-height: 100svh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding: var(--nav-h) 24px 80px;
+  
+  isolation: isolate;
+}
+
+.hero-parallax-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hero-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  z-index: 0;
+  opacity: 0.55;
+  transform-origin: center center;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.hero-bg-video-desktop { display: block; }
+.hero-bg-video-mobile  { display: none; }
+
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(253, 248, 243, 0.60) 0%,
+      rgba(240, 232, 255, 0.30) 45%,
+      rgba(253, 248, 243, 0.72) 100%
+    );
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.hero-grid-overlay { z-index: 2; }
+
+.hero-orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--accent-light) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+  animation: orbFloat1 8s ease-in-out infinite;
+}
+
+.hero-orb-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 210, 150, 0.4) 0%, transparent 70%);
+  bottom: -100px;
+  left: 10%;
+  animation: orbFloat2 10s ease-in-out infinite;
+}
+
+.hero-orb-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(200, 180, 255, 0.35) 0%, transparent 70%);
+  top: 40%;
+  left: 40%;
+  animation: orbFloat3 12s ease-in-out infinite;
+}
+
+.hero-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(13,13,13,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,13,13,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-particles { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.hero-particle {
+  position: absolute; border-radius: 50%;
+  background: rgba(154,211,242,0.6);
+  animation: particleFloat linear infinite;
+}
+@keyframes particleFloat {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+ 
+}
+
+.scroll-large-text {
+  position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%) translateY(35%);
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 22vw, 26rem);
+  font-weight: 900; letter-spacing: -0.05em;
+  color: rgba(230,230,250,0.07);
+  -webkit-text-stroke: 2px rgba(154,211,242,0.12);
+  text-shadow: 0 0 60px rgba(154,211,242,0.1);
+  white-space: nowrap; z-index: 0;
+  pointer-events: none; will-change: transform; user-select: none;
+}
+
+.hero-content {
+  position: relative; z-index: 3;
+  max-width: 900px; text-align: center; width: 100%;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em;
+  text-transform: uppercase; color: rgba(0, 0, 0, 0.75);
+  margin-bottom: 2rem; opacity: 0;
+}
+.eyebrow-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--accent); border-radius: 50%;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%  { opacity: 0.5; transform: scale(0.6); }
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 6.5rem);
+  font-weight: 800; line-height: 1.04;
+  letter-spacing: -0.04em; color: #000000; margin-bottom: 1.6rem;
+}
+.hero-line { display: block; overflow: hidden; }
+.word-wrap { display: inline-block; }
+.title-accent { color: var(--accent-ink); }
+.hero-title em { font-size: 0.92em; letter-spacing: -0.05em; color: rgba(0, 0, 0, 0.7); }
+
+.hero-actions {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1rem; margin-bottom: 4rem; flex-wrap: wrap; opacity: 0;
+}
+.hero-actions .btn-primary {
+  background: rgb(249, 246, 246); color: #0d0d0d;
+}
+.hero-actions .btn-primary::before { background: var(--accent-light); }
+.hero-actions .btn-ghost {
+  border-color: white; color: white;
+}
+.hero-actions .btn-ghost:hover { border-color: white; background: rgba(255,255,255,0.1); color: white; }
+
+.hero-stats {
+  display: flex; align-items: center; justify-content: center;
+  gap: 3rem; padding-top: 2rem;
+  border-top: 1px solid rgba(252, 252, 252, 0.15);
+  opacity: 0; flex-wrap: wrap;
+}
+.stat-item { text-align: center; }
+.stat-num { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; letter-spacing: -0.05em; color: #070707; line-height: 1; }
+.stat-suffix { font-size: 1.4rem; font-weight: 700; color: var(--accent-light); }
+.stat-label { display: block; font-size: 0.75rem; color: rgba(6, 6, 6, 0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+.stat-divider { width: 1px; height: 40px; background: rgba(0, 0, 0, 0.15); }
+
+.hero-scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 3;
+  opacity: 0; animation: scrollHintReveal 1s 2.5s forwards;
+}
+@keyframes scrollHintReveal { to { opacity: 0.5; } }
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--accent-light), transparent);
+  animation: scrollLineAnim 1.8s ease-in-out infinite;
+}
+@keyframes scrollLineAnim {
+  0%   { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  50%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  51%  { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+}
+.hero-scroll-hint span { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+
+.marquee-strip {
+  background: var(--text-primary); color: var(--bg); padding: 14px 0;
+  overflow: hidden; border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.marquee-track {
+  display: flex; align-items: center; gap: 2rem;
+  white-space: nowrap; animation: marqueeScroll 25s linear infinite; width: max-content;
+}
+.marquee-track span { font-size: 0.82rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+.marquee-dot { color: var(--accent) !important; opacity: 1 !important; font-size: 0.6rem !important; }
+@keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+.services-stacked-container {
+  position: relative; width: 100%;
+  padding: 80px clamp(16px, 4vw, 60px);
+  background: #1D1C22;
+}
+.services-section-title { display: flex; align-items: center; gap: 16px; margin-bottom: 50px; flex-wrap: wrap; }
+.services-section-title h2 {
+  font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 700; color: #fff; letter-spacing: -0.02em;
+}
+.services-section-title .section-tag { background: rgba(255,255,255,0.08); color: var(--accent-light); border-color: rgba(255,255,255,0.2); margin-bottom: 0; }
+
+.services-cards-wrapper {
+  position: relative; display: flex; flex-direction: column;
+  align-items: center; width: 100%; gap: 0;
+}
+
+.service-split-card {
+  position: sticky;
+  top: clamp(8vh, 12vh, 120px);
+  display: grid; grid-template-columns: 1fr 1fr;
+  width: 100%; max-width: 1100px;
+  min-height: 420px; height: auto; margin-bottom: 50px;
+  background: rgba(25,24,30,0.90);
+  border: 1px solid rgba(154,211,242,0.28);
+  border-radius: 20px;
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.5), 0 30px 60px rgba(0,0,0,0.7);
+  overflow: hidden; transition: box-shadow 0.3s ease;
+  opacity: 0; transform: translateY(40px);
+}
+.service-split-card.in-view {
+  opacity: 1; transform: translateY(0);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.3s ease;
+}
+.service-split-card:hover {
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.5), 0 30px 70px rgba(0,0,0,0.8), 0 0 0 1px rgba(154,211,242,0.5);
+}
+
+.card-left {
+  padding: clamp(24px,4vw,40px); display: flex; flex-direction: column;
+  justify-content: center; border-right: 1px solid rgba(154,211,242,0.12);
+}
+.card-num { font-size: 0.9rem; color: #A9D8F5; font-weight: 600; margin-bottom: 8px; letter-spacing: 0.08em; }
+.service-split-card .service-name {
+  font-family: var(--font-display); font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+  color: #A9D8F5; line-height: 1.25; margin-bottom: 12px; font-weight: 700;
+}
+.service-split-card .service-desc {
+  font-size: clamp(0.85rem, 1.2vw, 0.97rem);
+  color: rgba(255,255,255,0.88); line-height: 1.6; margin-bottom: 16px;
+}
+.service-benefits { list-style: none; padding: 0; margin-bottom: 16px; }
+.service-benefits li {
+  font-size: clamp(0.82rem, 1.1vw, 0.93rem); color: rgba(255,255,255,0.82);
+  margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.service-price-tag { display: flex; flex-direction: column; margin-top: auto; }
+.price-label { font-size: 0.7rem; text-transform: uppercase; color: rgba(230,230,250,0.45); letter-spacing: 0.1em; margin-bottom: 2px; }
+.price-val { font-size: clamp(1.4rem, 2vw, 2rem); font-weight: 700; color: #fff; }
+.price-val small { font-size: 0.55em; font-weight: 400; opacity: 0.7; }
+
+.card-right {
+  padding: clamp(24px,4vw,40px); display: flex; flex-direction: column;
+  justify-content: space-between; gap: 16px;
+}
+.right-top-cta { display: flex; justify-content: flex-end; }
+.btn-mini-cta {
+  color: rgba(230,230,250,0.8); font-size: 0.88rem; font-weight: 500;
+  border: none; border-bottom: 1px solid rgba(230,230,250,0.3);
+  padding-bottom: 3px; background: transparent; cursor: none; transition: all 0.3s ease;
+  display: inline-block;
+}
+.btn-mini-cta:hover { color: #fff; border-bottom-color: #fff; transform: translateX(3px); }
+
+.card-image-placeholder{
+    
+    height:300px;
+    overflow:hidden;
+    border-radius:12px;
+    border:1px solid rgba(154,211,242,0.12);
+    background:rgba(154,211,242,0.04);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+}
+
+.img-inner-glow{
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+.img-inner-glow img{
+    width: 100%;
+    height:100%;
+    display:block;
+    object-fit:cover;      
+    border-radius:12px;
+}
+
+.btn-book-now {
+  display: block; width: 100%; padding: 14px;
+  background: #fff; color: #000; text-align: center;
+  font-weight: 700; border-radius: 10px; font-size: 0.95rem;
+  border: none; cursor: none;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-book-now:hover { transform: translateY(-2px); background: #DDF1FC; box-shadow: 0 8px 24px rgba(154,211,242,0.3); }
+
+.enquiry-modal {
+  position: fixed; inset: 0; z-index: 9000;
+  display: none; align-items: center; justify-content: center;
+  padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.enquiry-modal.open { opacity: 1; pointer-events: all; display: flex !important; }
+.enquiry-backdrop { position: absolute; inset: 0; background: rgba(13,13,13,0.65); backdrop-filter: blur(8px); }
+.enquiry-panel {
+  position: relative; background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  max-width: 480px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(30px);
+  transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+  border: 1px solid var(--border); max-height: 90vh; overflow-y: auto;
+}
+.enquiry-modal.open .enquiry-panel { transform: translateY(0); }
+.enquiry-close {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  background: var(--border); border: none; width: 32px; height: 32px;
+  border-radius: 50%; font-size: 0.85rem; cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition); color: var(--text-primary);
+}
+.enquiry-close:hover { background: var(--text-primary); color: var(--bg); }
+
+.step-indicator { display: flex; align-items: center; margin-bottom: 2rem; }
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+  flex-shrink: 0; transition: var(--transition);
+}
+.step-num.active { border-color: var(--accent-deep); background: var(--accent-deep); color: var(--on-accent); }
+.step-num.done   { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.step-line { flex: 1; height: 1.5px; background: var(--border); transition: background 0.3s; }
+.step-line.active { background: var(--accent); }
+
+.enquiry-step { display: none; animation: stepFadeIn 0.4s ease; }
+.enquiry-step.active { display: block; }
+@keyframes stepFadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+.enquiry-step h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.3rem; }
+.enquiry-step > p { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
+
+.enquiry-input {
+  width: 100%; background: var(--bg);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 16px; font-family: var(--font-display); font-size: 0.9rem;
+  color: var(--text-primary); margin-bottom: 0.8rem;
+  transition: border-color 0.3s; outline: none;
+}
+.enquiry-input:focus { border-color: var(--accent); }
+.enquiry-textarea { min-height: 100px; resize: vertical; }
+.enquiry-select { appearance: none; -webkit-appearance: none; cursor: none; }
+.enquiry-next, .enquiry-submit { width: 100%; justify-content: center; margin-top: 0.5rem; }
+
+.enquiry-summary-box {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 1rem; font-size: 0.85rem; line-height: 1.8;
+  margin-bottom: 1rem; border: 1px solid var(--border); color: var(--text-secondary);
+}
+
+.enquiry-success { display: none; text-align: center; padding: 2rem 0; }
+.enquiry-success.show { display: block; animation: stepFadeIn 0.5s ease; }
+.success-icon {
+  width: 60px; height: 60px; background: var(--accent); color: var(--on-accent);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; margin: 0 auto 1rem;
+}
+.enquiry-success h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+.enquiry-success p  { font-size: 0.88rem; color: var(--text-secondary); }
+
+.portfolio {
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  max-width: 1280px; margin: 0 auto;
+}
+.portfolio-header { margin-bottom: 60px; }
+.portfolio-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  grid-template-rows: auto auto; gap: 16px;
+}
+.portfolio-item {
+  border-radius: var(--radius-lg); overflow: hidden; position: relative;
+  background: var(--bg-warm); border: 1px solid var(--border);
+  aspect-ratio: 4/3; cursor: none;
+  transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s;
+  will-change: transform; opacity: 0; transform: translateY(30px);
+}
+.portfolio-item.in-view { opacity: 1; transform: translateY(0); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94); }
+.portfolio-item:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.portfolio-item-large { grid-column: span 2; aspect-ratio: 16/9; }
+.portfolio-item-wide  { grid-column: span 2; aspect-ratio: 16/9; }
+.portfolio-placeholder {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(135deg, var(--bg-warm), var(--lavender-soft));
+}
+.placeholder-num { font-size: clamp(2.5rem,5vw,3.5rem); font-weight: 800; letter-spacing: -0.05em; color: rgba(13,13,13,0.08); font-family: var(--font-serif); }
+.placeholder-label { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+.placeholder-tag { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink); background: var(--lavender-soft); padding: 4px 12px; border-radius: 100px; border: 1px solid var(--lavender-border); }
+.portfolio-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(13,13,13,0.85) 0%, transparent 60%);
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 1.5rem; opacity: 0; transition: opacity 0.4s;
+}
+.portfolio-item:hover .portfolio-overlay { opacity: 1; }
+.portfolio-overlay h3 { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.portfolio-overlay p  { font-size: 0.78rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
+
+.pricing {
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  max-width: 1280px; margin: 0 auto;
+}
+.pricing-header { text-align: center; margin-bottom: 60px; }
+.pricing-header .section-subtitle { margin: 0 auto; }
+
+.pricing-toggle-wrapper {
+  margin-top: 2rem; display: flex; justify-content: center;
+  align-items: center; gap: 14px;
+}
+.toggle-label {
+  font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px;
+}
+.toggle-save-badge {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+  color: var(--on-accent); padding: 2px 8px; border-radius: 100px;
+}
+
+.ios-toggle { display: inline-flex; align-items: center; cursor: pointer; }
+.ios-toggle input { display: none; }
+.ios-toggle-track {
+  position: relative; width: 52px; height: 28px;
+  background: var(--border-strong); border-radius: 100px;
+  transition: background 0.35s ease; overflow: hidden;
+}
+.ios-toggle input:checked ~ .ios-toggle-track { background: var(--accent-deep); }
+.ios-toggle-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; background: white;
+  border-radius: 50%; transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+}
+.ios-toggle input:checked ~ .ios-toggle-track .ios-toggle-thumb {
+  transform: translateX(24px);
+}
+
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 20px; perspective: 1200px;
+}
+.pricing-card {
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: var(--radius-xl); padding: 2.5rem 2rem;
+  position: relative; cursor: none;
+  transition: box-shadow 0.4s, border-color 0.3s;
+  transform-style: preserve-3d; will-change: transform;
+  opacity: 0; transform: translateY(30px);
+}
+.pricing-card.in-view { opacity: 1; transform: translateY(0); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s, border-color 0.3s; }
+.pricing-card.popular {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #fff 0%, var(--lavender-soft) 100%);
+  animation: popularGlow 3s ease-in-out infinite;
+}
+@keyframes popularGlow {
+  0%,100% { box-shadow: 0 0 20px var(--accent-glow), var(--shadow-md); }
+  50%  { box-shadow: 0 0 50px var(--accent-glow), 0 0 80px rgba(154,211,242,0.1), var(--shadow-md); }
+}
+.popular-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+  color: var(--on-accent); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 16px; border-radius: 100px; white-space: nowrap;
+}
+.plan-name { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 0.5rem; }
+.plan-price { font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.05em; color: var(--text-primary); line-height: 1; margin-bottom: 0.3rem; }
+.plan-price span { font-size: 1.2rem; font-weight: 600; vertical-align: super; margin-right: 2px; }
+.plan-period  { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.plan-divider { height: 1px; background: var(--border); margin-bottom: 1.5rem; }
+.plan-desc    { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; }
+.plan-features { list-style: none; margin-bottom: 2rem; }
+.plan-features li { font-size: 0.85rem; padding: 6px 0; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 10px; }
+.plan-features li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.plan-cta { width: 100%; justify-content: center; }
+
+.testimonials {
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  background: var(--text-primary); color: var(--bg); overflow: hidden;
+}
+.testimonials-header { max-width: 1280px; margin: 0 auto 60px; }
+.testimonials-header .section-tag { background: rgba(255,255,255,0.08); color: var(--accent-light); border-color: rgba(255,255,255,0.1); }
+.testimonials-header .section-title { color: white; }
+
+.testimonials-layout {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 5rem; align-items: center;
+}
+
+.phone-mockup-wrap { display: flex; justify-content: center; }
+.phone-frame {
+  width: 280px; height: 560px; background: #1a1a1a;
+  border-radius: 40px; padding: 16px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  transform: scale(0.72); opacity: 0; will-change: transform, opacity;
+}
+.phone-notch { width: 80px; height: 24px; background: #0d0d0d; border-radius: 0 0 16px 16px; margin: 0 auto 12px; }
+.phone-screen {
+  background: var(--bg-card); border-radius: 28px; height: calc(100% - 48px);
+  padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; overflow: hidden;
+}
+.phone-app-header { display: flex; align-items: center; gap: 10px; }
+.app-avatar {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent-light));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem; color: var(--on-accent); flex-shrink: 0;
+}
+.app-meta { display: flex; flex-direction: column; flex: 1; }
+.app-name { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); }
+.app-role { font-size: 0.7rem; color: var(--text-muted); }
+.app-stars { color: #f59e0b; font-size: 0.75rem; }
+.app-review { font-size: 0.82rem; line-height: 1.65; color: var(--text-secondary); flex: 1; }
+.phone-dots { display: flex; gap: 6px; justify-content: center; margin-top: auto; }
+.phone-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong); transition: background 0.3s, transform 0.3s; }
+.phone-dot.active { background: var(--accent); transform: scale(1.3); }
+
+.testimonials-list { display: flex; flex-direction: column; gap: 1rem; }
+.testimonial-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-lg); padding: 1.5rem;
+  cursor: none; transition: var(--transition); will-change: opacity, transform;
+  opacity: 0; transform: translateX(40px);
+}
+.testimonial-card.in-view { opacity: 1; transform: translateX(0); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94); }
+.testimonial-card.active { border-color: rgba(154,211,242,0.4); background: rgba(154,211,242,0.08); }
+.testimonial-card:hover { background: rgba(255,255,255,0.06); }
+.testimonial-card p  { font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.65; margin-bottom: 1rem; }
+.tcard-author { display: flex; align-items: center; gap: 10px; }
+.tcard-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem; color: var(--on-accent); flex-shrink: 0;
+}
+.tcard-author strong { font-size: 0.88rem; display: block; color: white; }
+.tcard-author span   { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+.about {
+  position: relative;
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  max-width: 1280px; margin: 0 auto; overflow: hidden;
+}
+
+.about .scroll-large-text {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, 35%);
+  z-index: 0; pointer-events: none;
+}
+
+.about-vision {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4rem; align-items: start; margin-bottom: 80px;
+  position: relative; z-index: 1;
+}
+.about-left-col {}
+.about-title { font-size: clamp(1.8rem, 4vw, 3.5rem); }
+.about-body { font-size: clamp(0.9rem, 1.2vw, 1rem); color: var(--text-secondary); line-height: 1.8; margin-bottom: 2rem; }
+.about-pillars { display: flex; flex-direction: column; gap: 1rem; }
+.pillar {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  gap: 0 12px; padding: 1rem 1.2rem;
+  background: var(--bg-warm); border-radius: var(--radius-md);
+  border: 1px solid var(--border); transition: var(--transition);
+  opacity: 0; transform: translateX(30px);
+}
+.pillar.in-view { opacity: 1; transform: translateX(0); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94); }
+.pillar:hover { border-color: var(--lavender-border); background: var(--lavender-soft); transform: translateX(6px); }
+.pillar-icon { font-size: 1.2rem; grid-row: span 2; display: flex; align-items: center; }
+.pillar strong { font-size: 0.9rem; font-weight: 700; }
+.pillar p { font-size: 0.82rem; color: var(--text-secondary); }
+
+.team-section { position: relative; z-index: 1; }
+.team-title { font-size: clamp(1.4rem, 3vw, 2.4rem); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 2.5rem; }
+.team-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+
+.team-card {
+  position: relative; height: 320px; cursor: none;
+  transform-style: preserve-3d; perspective: 1000px;
+  will-change: transform, opacity; opacity: 0; transform: translateY(30px);
+}
+.team-card.in-view { opacity: 1; transform: translateY(0); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94); }
+.team-card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.34,1.56,0.64,1); }
+.team-card:hover .team-card-inner { transform: rotateY(180deg); }
+.team-card-front, .team-card-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius-lg); overflow: hidden; }
+.team-card-front {
+  background: linear-gradient(135deg, var(--bg-warm) 0%, var(--lavender-soft) 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding: 1.5rem; border: 1px solid var(--border);
+}
+.team-photo-placeholder{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+}
+
+.team-photo{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border:none;
+    border-radius:0;
+    margin:0;
+    display:block;
+}
+
+.team-photo-label{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:2;
+    background:rgba(0,0,0,0.6);
+    color:#fff;
+    padding:8px 14px;
+    border-radius:20px;
+    font-size:0.7rem;
+    letter-spacing:2px;
+}
+.team-card-back {
+  background: var(--text-primary); transform: rotateY(180deg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 1.5rem; text-align: center; gap: 0.5rem;
+}
+.team-back-initials {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent-light));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; font-weight: 700; color: var(--on-accent); margin-bottom: 0.5rem;
+}
+.team-back-name { font-size: 1.1rem; font-weight: 700; color: white; }
+.team-back-role { font-size: 0.8rem; color: var(--accent-light); }
+.team-back-bio  { font-size: 0.78rem; color: rgba(255,255,255,0.55); line-height: 1.6; margin-top: 0.5rem; }
+.team-back-link { font-size: 0.75rem; font-weight: 600; color: var(--accent-light); border: 1px solid rgba(154,211,242,0.3); padding: 6px 14px; border-radius: 100px; margin-top: 0.5rem; transition: var(--transition); }
+.team-back-link:hover { background: var(--accent-deep); border-color: transparent; color: var(--on-accent); }
+.team-photo,
+.team-back-photo{
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+    margin:0 auto 15px;
+    border:3px solid rgba(255,255,255,0.15);
+}
+
+.reels-grid { display: none !important; }
+
+.reels-section { 
+  padding: clamp(60px, 8vw, 100px) 0 80px; 
+  background: var(--bg-warm); 
+  overflow: hidden; 
+}
+
+.reels-header { 
+  padding: 0 clamp(16px, 4vw, 24px); 
+  max-width: 1280px; 
+  margin: 0 auto 50px; 
+}
+
+.reels-container {
+  position: relative; 
+  display: flex; 
+  align-items: center; 
+  gap: 24px;
+  padding: 0 clamp(40px, 5vw, 60px); 
+  max-width: 1400px; 
+  margin: 0 auto;
+}
+
+.reels-track-wrap { 
+  flex: 1; 
+  overflow: hidden; 
+  width: 100%;
+}
+
+.reels-track { 
+  display: flex !important; 
+  flex-direction: row !important;
+  gap: 24px; 
+  width: max-content;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); 
+  will-change: transform;
+}
+
+.reel-item {
+  flex-shrink: 0; 
+  position: relative;
+  width: 280px; 
+  height: 485px; 
+  border-radius: 20px; 
+  overflow: hidden; 
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s;
+  background: #000000;
+}
+
+.reel-item:hover { 
+  transform: scale(1.03) translateY(-4px); 
+  box-shadow: 0 15px 35px rgba(0,0,0,0.18); 
+}
+
+.reel-video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.reel-placeholder { 
+  position: absolute; 
+  inset: 0; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: space-between; 
+  padding: 24px 18px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.45) 100%) !important; 
+  z-index: 2; 
+  pointer-events: none; 
+}
+
+.reel-num { 
+  font-size: 0.85rem; 
+  font-weight: 600;
+  letter-spacing: 0.2em; 
+  color: rgba(255, 255, 255, 0.9); 
+  align-self: flex-start;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.reel-play { 
+  width: 52px; 
+  height: 52px; 
+  background: rgba(255, 255, 255, 0.22); 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.35); 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 1rem; 
+  color: white; 
+  transition: all 0.3s ease; 
+}
+
+.reel-item:hover .reel-play { 
+  background: #ffffff; 
+  color: #000000;
+  transform: scale(1.1);
+}
+
+.reel-tag { 
+  background: rgba(255, 255, 255, 0.16); 
+  backdrop-filter: blur(12px); 
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px; 
+  padding: 10px 14px; 
+  font-size: 0.8rem; 
+  font-weight: 500;
+  color: #ffffff; 
+  width: 100%;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.reels-nav { 
+  width: 46px; 
+  height: 46px; 
+  background: var(--bg-card, #fff); 
+  border: 1.5px solid var(--border, #eee); 
+  border-radius: 50%; 
+  font-size: 1.4rem; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  flex-shrink: 0; 
+  transition: all 0.3s ease; 
+  color: var(--text-primary, #000); 
+  z-index: 10;
+}
+
+.reels-nav:hover { 
+  background: var(--text-primary, #000); 
+  color: var(--bg-warm, #fff); 
+}
+
+.reels-progress-line { 
+  max-width: 300px; 
+  margin: 3rem auto 0; 
+  height: 3px; 
+  background: var(--border, #eee); 
+  border-radius: 4px; 
+  overflow: hidden;
+}
+
+.reels-progress-fill { 
+  height: 100%; 
+  background: var(--accent, #9AD3F2); 
+  width: 16.66%; 
+  transition: width 0.3s ease; 
+}
+
+@media (max-width: 768px) {
+  .reels-section { padding: 50px 0 60px; }
+  .reels-header { margin-bottom: 35px; text-align: center; }
+  
+  .reels-container {
+    padding: 0 16px; 
+    gap: 12px;
+  }
+
+  .reels-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 100;
+  }
+  
+  #reelsPrev { left: 8px; }
+  #reelsNext { right: 8px; }
+
+  .reel-item {
+    width: 215px !important;       
+    height: 380px !important;      
+    border-radius: 16px;
+  }
+
+  .reel-placeholder { padding: 18px 12px; }
+  .reel-play { width: 44px; height: 44px; font-size: 0.9rem; }
+  .reel-tag { font-size: 0.75rem; padding: 8px 10px; border-radius: 8px; }
+  .reels-progress-line { max-width: 200px; margin-top: 2rem; }
+}
+
+@media (max-width: 480px) {
+  
+  .reel-item {
+    width: 190px !important;
+    height: 335px !important;
+  }
+}
+
+.faq {
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  max-width: 860px; margin: 0 auto; position: relative;
+}
+.faq-header { margin-bottom: 50px; }
+
+.faq-bubbles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+.faq-bubble {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle, rgba(154,211,242,0.12) 0%, transparent 70%);
+  animation: bubbleFloat ease-in-out infinite;
+}
+@keyframes bubbleFloat {
+  0%,100% { transform: translateY(0) scale(1); opacity: 0.4; }
+  50%  { transform: translateY(-30px) scale(1.08); opacity: 0.7; }
+}
+
+.faq-list { position: relative; z-index: 1; }
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  opacity: 0; transform: translateY(20px);
+}
+.faq-item.in-view {
+  opacity: 1; transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.faq-question {
+  width: 100%; background: none; border: none;
+  padding: 1.4rem 0; display: flex; justify-content: space-between;
+  align-items: center; gap: 1.5rem; cursor: none; text-align: left;
+}
+.faq-q-text { font-size: clamp(0.88rem,1.2vw,1rem); font-weight: 600; color: var(--text-primary); transition: color 0.3s; }
+.faq-question:hover .faq-q-text { color: var(--accent-ink); }
+.faq-icon {
+  width: 28px; height: 28px; background: var(--bg-warm); border: 1px solid var(--border);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; flex-shrink: 0; color: var(--text-secondary); transition: var(--transition);
+}
+.faq-item.open .faq-icon { background: var(--accent); border-color: var(--accent); color: var(--on-accent); transform: rotate(45deg); }
+.faq-answer-wrap { overflow: hidden; max-height: 0; transition: max-height 0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
+.faq-item.open .faq-answer-wrap { max-height: 400px; }
+.faq-answer { padding: 0 0 1.4rem; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.75; }
+
+.contact {
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  background: var(--bg-warm); overflow: hidden;
+}
+.contact-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1.3fr;
+  gap: 5rem; align-items: center;
+}
+.contact-left { opacity: 0; transform: translateX(-40px); }
+.contact-left.in-view { opacity: 1; transform: translateX(0); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94); }
+.contact-title { font-size: clamp(1.8rem, 4vw, 3.2rem); margin-bottom: 1rem; }
+.contact-desc  { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.75; margin-bottom: 2rem; }
+.contact-details { display: flex; flex-direction: column; gap: 0.8rem; }
+.contact-detail { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: var(--text-secondary); }
+.cd-icon { font-size: 1rem; }
+
+.contact-right { opacity: 0; transform: translateX(40px); }
+.contact-right.in-view { opacity: 1; transform: translateX(0); transition: opacity 0.7s 0.15s ease, transform 0.7s 0.15s cubic-bezier(0.25,0.46,0.45,0.94); }
+
+.contact-form { display: flex; flex-direction: column; gap: 0; }
+.form-group { position: relative; margin-bottom: 1.8rem; }
+.form-input {
+  width: 100%; background: transparent; border: none;
+  border-bottom: 1.5px solid var(--border-strong);
+  padding: 12px 0; font-family: var(--font-display); font-size: 0.95rem;
+  color: var(--text-primary); outline: none; transition: border-color 0.3s;
+}
+.form-input::placeholder { color: transparent; }
+.form-label {
+  position: absolute; top: 12px; left: 0; font-size: 0.9rem;
+  color: var(--text-muted); pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.form-input:focus ~ .form-label,
+.form-input:not(:placeholder-shown) ~ .form-label {
+  top: -10px; font-size: 0.72rem; color: var(--accent-ink); font-weight: 600; letter-spacing: 0.08em;
+}
+.form-underline {
+  position: absolute; bottom: 0; left: 0; width: 0; height: 1.5px;
+  background: var(--accent); transition: width 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.form-input:focus ~ .form-underline { width: 100%; }
+.form-textarea { min-height: 120px; resize: none; }
+.form-submit { align-self: flex-start; margin-top: 0.5rem; }
+.contact-success {
+  display: none; align-items: center; gap: 12px;
+  margin-top: 1rem; padding: 1rem 1.2rem;
+  background: var(--lavender-soft); border-radius: var(--radius-sm);
+  border: 1px solid var(--lavender-border);
+}
+.contact-success.show { display: flex; }
+.contact-success .success-icon { width: 32px; height: 32px; font-size: 1rem; flex-shrink: 0; }
+.contact-success p { font-size: 0.88rem; color: var(--accent-ink); }
+
+.footer {
+  background: var(--text-primary); color: rgba(255,255,255,0.7);
+  padding: clamp(60px,8vw,80px) clamp(16px,4vw,24px) 32px;
+}
+.footer-top {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.2fr 2fr;
+  gap: 4rem; padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 2rem;
+}
+.footer-logo { font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.04em; display: inline-flex; align-items: center; margin-bottom: 0.8rem; }
+.footer-brand p { font-size: 0.88rem; line-height: 1.7; color: rgba(255,255,255,0.45); max-width: 280px; margin-bottom: 1.5rem; }
+.footer-social { display: flex; gap: 12px; }
+.social-link {
+  width: 38px; height: 38px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.6); transition: var(--transition); cursor: none;
+}
+.social-link:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--on-accent); transform: translateY(-2px); }
+.footer-cols { display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; }
+.footer-col h4 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 1.2rem; }
+.footer-col ul { display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-link { font-size: 0.88rem; color: rgba(255,255,255,0.55); position: relative; display: inline-block; transition: color 0.3s; cursor: none; }
+.footer-link::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 0; height: 1px; background: var(--accent-light); transition: width 0.3s ease; }
+.footer-link:hover { color: white; }
+.footer-link:hover::after { width: 100%; }
+.footer-bottom {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.78rem; color: rgba(255,255,255,0.3); flex-wrap: wrap; gap: 0.5rem;
+}
+
+.creativity-section {
+  padding: clamp(60px,8vw,100px) clamp(16px,4vw,24px);
+  background: var(--bg); overflow: hidden;
+}
+.creativity-header { max-width: 1280px; margin: 0 auto 50px; }
+.creativity-grid {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 20px;
+}
+.creativity-poster {
+  border-radius: var(--radius-lg); overflow: hidden; position: relative;
+  aspect-ratio: 4/5; cursor: none;
+  transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s;
+  will-change: transform;
+}
+.creativity-poster img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.6s ease;
+  display: block;
+}
+.creativity-poster:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+.creativity-poster:hover img { transform: scale(1.04); }
+.poster-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(13,13,13,0.45) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.creativity-poster:hover .poster-overlay { opacity: 1; }
+
+.tilt-card { transform-style: preserve-3d; }
+
+.team-carousel-outer { overflow: hidden; width: 100%; }
+
+.reels-videos-section {
+  padding: 50px clamp(16px,4vw,24px) 0;
+  max-width: 1280px; margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  body { cursor: auto; }
+  .cursor-dot, .cursor-ring { display: none; }
+  button { cursor: pointer; }
+  a      { cursor: pointer; }
+
+  .nav-links, .nav-cta-btn { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-mobile-menu { display: block; }
+
+  .hero {
+    padding: var(--nav-h) 16px 60px;
+    min-height: 100svh;
+    min-height: -webkit-fill-available;
+    position: relative;
+  }
+  .hero-parallax-bg {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important;
+    right: 0 !important; bottom: 0 !important;
+    width: 100% !important; height: 100% !important;
+    overflow: hidden;
+  }
+  .hero {
+    min-height: 100svh;
+    height: 100svh;
+    padding: var(--nav-h) 20px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-content {
+    width: 100%;
+  }
+  .hero-title {
+    font-size: clamp(1.9rem, 7.5vw, 2.8rem);
+    margin-bottom: 1.2rem;
+  }
+  .hero-actions {
+    margin-bottom: 1.5rem;
+  }
+  .hero-stats {
+    padding-top: 1rem;
+  }
+
+  .hero-bg-video-desktop { display: none !important; }
+  .hero-bg-video-mobile  { display: block !important; }
+  .hero-bg-video {
+    position: absolute !important;
+    top: 0 !important; left: 0 !important;
+    width: 100% !important; height: 100% !important;
+    min-width: 100% !important; min-height: 100% !important;
+    transform: none !important; -webkit-transform: none !important;
+    object-fit: cover !important; object-position: center center !important;
+    opacity: 0.55; will-change: auto;
+  }
+
+  .hero-title {
+    font-size: clamp(2.4rem, 9vw, 3.2rem);
+    line-height: 1.15;
+    margin-bottom: 5rem;
+  }
+  .hero-line { display: block; margin-bottom: 1em; }
+  .hero-line-1 { margin-bottom: 1em; }
+  .hero-line-3 { margin-top: 1em; }
+
+  .hero-eyebrow { font-size: 0.65rem; margin-bottom: 1.2rem; }
+
+  .hero-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 2.5rem;
+  }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .hero-stats {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 0; align-items: center; flex-wrap: unset;
+    padding-top: 1.2rem;
+  }
+  .stat-item { text-align: center; padding: 0 4px; }
+  .stat-divider {
+    display: block !important;
+    width: 1px; height: 32px;
+    background: rgba(0,0,0,0.12); margin: 0 auto;
+  }
+  .stat-num   { font-size: clamp(1.3rem, 6vw, 1.8rem); }
+  .stat-label { font-size: 0.6rem; letter-spacing: 0.05em; }
+
+  .service-split-card { grid-template-columns: 1fr; min-height: auto; top: 6vh; }
+  .card-left { border-right: none; border-bottom: 1px solid rgba(154,211,242,0.1); }
+  
+  .card-image-placeholder { display: none; }
+  .card-right {
+    padding: 20px 20px 24px;
+    gap: 12px;
+  }
+
+  .portfolio-grid { grid-template-columns: 1fr; }
+  .portfolio-item-large, .portfolio-item-wide { grid-column: span 1; aspect-ratio: 4/3; }
+
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    max-width: 100%;
+    margin: 0;
+  }
+  .pricing-card { padding: 1.4rem 1rem; }
+  .plan-price { font-size: 1.6rem; }
+  .plan-features li { font-size: 0.78rem; }
+  
+  .ios-toggle { cursor: pointer; }
+
+  .testimonials-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone-mockup-wrap {
+    display: flex; order: -1; justify-content: center;
+  }
+  .phone-frame {
+    transform: scale(1) !important; opacity: 1 !important;
+    width: min(260px, 70vw); height: auto; aspect-ratio: 9/18;
+  }
+  .phone-screen { height: auto; min-height: 0; flex: 1; }
+  
+  .testimonials-list { display: none; }
+
+  .about-vision { grid-template-columns: 1fr; gap: 2rem; }
+  .team-carousel-outer { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .team-carousel-outer::-webkit-scrollbar { display: none; }
+  .team-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 14px;
+    padding: 0 16px 16px;
+    width: max-content;
+    
+  }
+  .team-card {
+    flex: 0 0 260px;
+    width: 260px;
+    height: 360px;
+  }
+  
+  .team-card.flipped .team-card-inner { transform: rotateY(180deg); }
+  .team-photo-label { font-size: 0.65rem; }
+  
+  .team-card-back {
+    padding: 1.2rem;
+    gap: 0.35rem;
+    justify-content: center;
+  }
+  .team-back-photo {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 8px;
+  }
+  .team-back-name { font-size: 1rem; }
+  .team-back-role { font-size: 0.75rem; }
+  .team-back-bio  { font-size: 0.72rem; margin-top: 0.3rem; }
+  .team-back-link {
+    font-size: 0.72rem;
+    padding: 6px 14px;
+    margin-top: 0.3rem;
+    display: inline-block;
+  }
+
+  .reels-container { padding: 0 40px; }
+  .reels-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .reels-videos-section { padding: 30px 12px 0; }
+
+  .creativity-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  .contact-inner {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .contact-left  { order: 1; opacity: 1 !important; transform: none !important; }
+  .contact-right { order: 2; opacity: 1 !important; transform: none !important; }
+
+  .footer-top  { grid-template-columns: 1fr; gap: 0; padding-bottom: 2rem; }
+  .footer-cols { display: none; } 
+  .footer-brand {
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center; padding: 0 16px;
+  }
+  .footer-brand p { display: none; }
+  .footer-social { justify-content: center; margin-top: 1rem; }
+  .footer-bottom {
+    flex-direction: column; align-items: center;
+    text-align: center; gap: 0.25rem;
+  }
+  .footer-bottom span:last-child { display: none; }
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: clamp(2rem, 8.5vw, 2.8rem); }
+  
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost { font-size: 0.75rem; padding: 11px 10px; }
+
+  .team-grid { gap: 10px; }
+  .team-card { flex: 0 0 190px; width: 190px; height: 260px; }
+  .footer-cols { grid-template-columns: 1fr; }
+  .services-stacked-container { padding: 60px 12px; }
+  .services-section-title { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .enquiry-panel { padding: 1.5rem; }
+  .pricing-grid { gap: 10px; }
+  .pricing-card { padding: 1.2rem 0.85rem; }
+  .plan-price { font-size: 1.4rem; }
+  .creativity-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .reels-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 430px) {
+  .hero-title { font-size: clamp(1.9rem, 8vw, 2.6rem); }
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 390px) {
+  .hero-title { font-size: clamp(1.75rem, 7.5vw, 2.2rem); }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost { font-size: 0.72rem; padding: 10px 8px; }
+  .pricing-card { padding: 1rem 0.75rem; }
+  .plan-price { font-size: 1.3rem; }
+}
+
+@media (max-width: 375px) {
+  .hero-title { font-size: 1.75rem; }
+  .service-split-card { border-radius: 14px; }
+  .btn-primary, .btn-ghost { padding: 12px 16px; font-size: 0.8rem; }
+  .pricing-card { padding: 0.9rem 0.7rem; }
+  .stat-num { font-size: 1.2rem; }
+}
+
+@media (max-width: 360px) {
+  .hero-title { font-size: 1.65rem; }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost { font-size: 0.68rem; padding: 10px 7px; }
+  .plan-price { font-size: 1.2rem; }
+  .plan-features li { font-size: 0.72rem; }
+}
+
+@media (max-width: 320px) {
+  :root { --nav-h: 64px; }
+  .hero-title { font-size: 1.5rem; }
+  .stat-num { font-size: 1rem; }
+  .stat-label { font-size: 0.52rem; }
+  .service-split-card { top: 4vh; }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost { font-size: 0.65rem; padding: 9px 6px; }
+  .pricing-card { padding: 0.8rem 0.6rem; }
+}
+
+@media (max-width: 1024px) {
+  .about-vision   { grid-template-columns: 1fr; }
+  .team-grid      { grid-template-columns: repeat(2,1fr); }
+  .portfolio-grid { grid-template-columns: repeat(2,1fr); }
+  .portfolio-item-large, .portfolio-item-wide { grid-column: span 2; }
+  .pricing-grid   { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+  .contact-inner  { gap: 3rem; }
+}
+
+@media (min-width: 1440px) {
+  .services-stacked-container { padding: 100px max(60px, calc((100vw - 1200px)/2)); }
+}
+
+@media (min-width: 1920px) {
+  .hero-title { font-size: 7.5rem; }
+  .about-title { font-size: 4rem; }
+}
+
+.portfolio-placeholder .proj-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.portfolio-overlay{z-index:2}
+.demo-note{font-size:.75rem;line-height:1.6;color:rgba(255,255,255,.55);max-width:360px;margin:.6rem 0 1rem}
+.demo-note-light{color:var(--text-muted);max-width:none;margin:0 0 1rem}
+.fp-calc{padding:90px 0 20px;position:relative;width:100%}
+.fp-calc-header{text-align:center;margin-bottom:48px}
+.fp-calc .section-tag{background:rgba(255,255,255,0.08);color:var(--accent-light);border-color:rgba(255,255,255,0.2)}
+.fp-calc .section-title{color:#fff}
+.fp-calc .section-title em{color:var(--accent-light)}
+.fp-calc .section-subtitle{color:rgba(255,255,255,0.7)}
+.fp-calc-card{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.2fr 1fr;gap:32px;background:#F6FAFD;border:1px solid #DCEBF5;border-radius:28px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.fp-calc-controls{display:flex;flex-direction:column;gap:28px}
+.fp-field label,.fp-field-label{display:block;font-size:14px;font-weight:600;color:#23212B;margin-bottom:12px}
+.fp-field strong{color:var(--accent-ink);font-size:18px;margin:0 4px}
+.fp-field input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:99px;background:#D6ECFA;outline:none;cursor:pointer}
+.fp-field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#A9D8F5;border:3px solid #FFFFFF;box-shadow:0 2px 10px rgba(120,180,220,.5);cursor:pointer}
+.fp-field input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#A9D8F5;border:3px solid #FFFFFF;cursor:pointer}
+.fp-seg{display:flex;gap:8px;background:#FFFFFF;border:1px solid #DCEBF5;border-radius:16px;padding:6px}
+.fp-seg-btn{flex:1;border:0;background:transparent;padding:12px 8px;border-radius:12px;font:600 14px 'Plus Jakarta Sans',sans-serif;color:#5C5870;cursor:pointer;transition:all .3s ease}
+.fp-seg-btn:hover{background:#EAF6FD}
+.fp-seg-btn.active{background:#BFE3F7;color:#23212B}
+.fp-check{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:10px;background:#FFFFFF;border:1px solid #DCEBF5;border-radius:14px;cursor:pointer;font-weight:500!important;transition:all .3s ease}
+.fp-check:hover{border-color:#A9D8F5;transform:translateY(-1px)}
+.fp-check input{width:18px;height:18px;accent-color:#8CCBF0;cursor:pointer}
+.fp-check span{flex:1;font-size:14px}
+.fp-check em{font-family:var(--font-display);font-style:normal;font-weight:400;font-size:13px;color:#7C7890}
+.fp-calc-result{border:1px solid #DCEBF5;border-radius:22px;padding:32px;display:flex;flex-direction:column;gap:16px;background-image:linear-gradient(180deg,#FFFFFF,#EEF7FD)}
+.fp-result-label{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#7C7890;font-weight:600}
+.fp-result-price{display:flex;align-items:baseline;gap:6px;color:#23212B;flex-wrap:wrap}
+.fp-result-price span{font-size:28px;font-weight:600}
+.fp-result-price b{font-size:clamp(40px,6vw,64px);line-height:1;font-weight:800}
+.fp-result-price small{font-size:15px;color:#7C7890}
+.fp-breakdown{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;border-top:1px dashed #CFE5F4;padding-top:16px}
+.fp-breakdown li{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:#4A4660}
+.fp-breakdown li b{font-weight:600;color:#23212B;white-space:nowrap}
+.fp-note{font-size:12px;color:#8A869C;line-height:1.6;margin:0}
+.fp-calc-result .btn-primary{align-self:flex-start}
+@media(max-width:900px){.fp-calc{padding:70px 0 10px}.fp-calc-card{grid-template-columns:1fr;padding:24px;gap:24px}}
+@media(max-width:480px){.fp-calc-card{padding:18px;border-radius:22px}.fp-calc-result{padding:22px}.fp-seg-btn{padding:10px 4px;font-size:13px}}
+
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.9/dist/lenis.min.js"></script>
+</head>
+<body>
+
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <header class="nav-header" id="mainNav">
+    <nav class="nav-inner">
+      <a href="#home" class="nav-logo">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMDAgODAiPjxyZWN0IHg9IjIiIHk9IjgiIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE4IiBmaWxsPSIjQkZFM0Y3Ii8+PHBhdGggZD0iTTIwIDUyIEwzNCAyNCBMNDggNTIgWiIgZmlsbD0iI0ZGRkZGRiIvPjxwYXRoIGQ9Ik0yNiA1MiBMMzQgMzYgTDQyIDUyIFoiIGZpbGw9IiM5QUQzRjIiLz48dGV4dCB4PSI4MiIgeT0iNTIiIGZvbnQtZmFtaWx5PSJQbHVzIEpha2FydGEgU2FucywgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZvbnQtd2VpZ2h0PSI4MDAiIGxldHRlci1zcGFjaW5nPSItMSIgZmlsbD0iIzIzMjEyQiI+Rmxvd1BpbG90PC90ZXh0Pjwvc3ZnPg==" alt="FlowPilot" style="height: 44px; width: auto; display: block;">
+      </a>
+      <ul class="nav-links">
+        <li><a href="#home"       class="nav-link active">Home</a></li>
+        <li><a href="#services"   class="nav-link">Features</a></li>
+        <li><a href="#portfolio"  class="nav-link">Use Cases</a></li>
+        <li><a href="#pricing"    class="nav-link">Pricing &amp; Plans</a></li>
+        <li><a href="#about"      class="nav-link">About</a></li>
+        <li><a href="#contact"    class="nav-link">Contact</a></li>
+      </ul>
+      <a href="#pricing" class="nav-cta-btn open-modal-trigger" data-service="General Consultation">
+        <span>Join Waitlist</span>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+    <div class="nav-mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#services">Features</a></li>
+        <li><a href="#portfolio">Use Cases</a></li>
+        <li><a href="#pricing">Pricing &amp; Plans</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="hero-parallax-bg" id="heroBg">
+      <video class="hero-bg-video hero-bg-video-desktop" autoplay muted loop playsinline preload="auto">
+        <source src="hero-bg-desktop.mp4" type="video/mp4" />
+      </video>
+      <video class="hero-bg-video hero-bg-video-mobile" autoplay muted loop playsinline preload="auto">
+        <source src="hero-bg-mob.mp4" type="video/mp4" />
+      </video>
+      <div class="hero-video-overlay"></div>
+      <div class="hero-orb hero-orb-1" id="heroOrb1"></div>
+      <div class="hero-orb hero-orb-2" id="heroOrb2"></div>
+      <div class="hero-orb hero-orb-3" id="heroOrb3"></div>
+      <div class="hero-grid-overlay"></div>
+      <div class="hero-particles" id="heroParticles"></div>
+      <div class="scroll-large-text" id="scrollLargeText">FLOWPILOT</div>
+    </div>
+
+    <div class="hero-content" id="heroContent">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        <span>Workflow &amp; Project Management Platform</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="hero-line hero-line-1"><span class="word-wrap"><em>Plan Smarter</em></span></span>
+        <span class="hero-line hero-line-2"><span class="word-wrap">Run Every Workflow</span></span>
+        <span class="hero-line hero-line-3"><span class="word-wrap">With Total</span><span class="title-accent word-wrap"> Clarity</span></span>
+      </h1>
+      <div class="hero-actions">
+        <a href="#services" class="btn-primary">
+          <span>Explore Features</span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="#calculator" class="btn-ghost">Estimate Your Plan</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num" data-count="6">0</span><span class="stat-suffix"></span>
+          <span class="stat-label">Core Modules</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-count="3">0</span><span class="stat-suffix"></span>
+          <span class="stat-label">Flexible Plans</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num" data-count="1">0</span><span class="stat-suffix"></span>
+          <span class="stat-label">Shared Workspace</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <div class="marquee-strip">
+    <div class="marquee-track" id="marqueeTrack">
+      <span>Workflow Builder</span><span class="marquee-dot">✦</span>
+      <span>Task Boards</span><span class="marquee-dot">✦</span>
+      <span>Team Collaboration</span><span class="marquee-dot">✦</span>
+      <span>Automations</span><span class="marquee-dot">✦</span>
+      <span>Reports</span><span class="marquee-dot">✦</span>
+      <span>Integrations</span><span class="marquee-dot">✦</span>
+      <span>Timelines</span><span class="marquee-dot">✦</span>
+      <span>Templates</span><span class="marquee-dot">✦</span>
+    </div>
+  </div>
+
+  <section class="services" id="services">
+    <section class="services-stacked-container">
+      <div class="services-section-title">
+        <div class="section-tag">PLATFORM FEATURES</div>
+        <h2>Everything Your Team <em>Needs</em></h2>
+      </div>
+
+      <div class="services-cards-wrapper">
+
+        <div class="service-split-card" data-service-card>
+          <div class="card-left">
+            <span class="card-num">01</span>
+            <h3 class="service-name">SEO • AEO • GEO</h3>
+            <p class="service-desc">Dominate Search. Own Visibility. Drive Revenue. Get your brand discovered across Google, ChatGPT, Gemini, and emerging AI search platforms—so customers find you before they find your competitors.</p>
+            <ul class="service-benefits">
+              <li>✦ AI Search Visibility Strategy</li><li>✦ Authority &amp; Trust Building</li><li>✦ Structured Data Optimization</li><li>✦ High-Intent Traffic Growth</li>
+            </ul>
+            <div class="service-price-tag">
+              <span class="price-label">Starting From</span>
+              <span class="price-val">₹999</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top-cta">
+              <a href="seo-projects.html" class="btn-mini-cta">Explore Projects →</a>
+            </div>
+            <div class="card-image-placeholder">
+              <span class="img-inner-glow"><img src="images/Seo aeo geo.jpeg " alt="SEO Optimization"></span>
+            </div>
+            <a href="#" class="btn-book-now open-modal-trigger" data-service="SEO • AEO • GEO">Book Now</a>
+          </div>
+        </div>
+
+        <div class="service-split-card" data-service-card>
+          <div class="card-left">
+            <span class="card-num">02</span>
+            <h3 class="service-name">AI Automations</h3>
+            <p class="service-desc">Work Less. Scale Faster. Replace repetitive tasks with intelligent automation systems that capture leads, nurture prospects, and save hundreds of hours every year.</p>
+            <ul class="service-benefits">
+              <li>✦ Lead Generation Automation</li><li>✦ WhatsApp &amp; CRM Workflows</li><li>✦ AI Assistants &amp; Chatbots</li><li>✦ Business Process Optimization</li>
+            </ul>
+            <div class="service-price-tag">
+              <span class="price-label">Starting From</span>
+              <span class="price-val">₹999</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top-cta">
+              <a href="ai-automation-projects.html" class="btn-mini-cta">Explore Projects →</a>
+            </div>
+            <div class="card-image-placeholder">
+              <span class="img-inner-glow"><img src="images/ai-automation.jpg" alt="AI &amp; AUTOMATION"></span>
+            </div>
+            <a href="#" class="btn-book-now open-modal-trigger" data-service="AI Automations">Book Now</a>
+          </div>
+        </div>
+
+        <div class="service-split-card" data-service-card>
+          <div class="card-left">
+            <span class="card-num">03</span>
+            <h3 class="service-name">Digital Marketing</h3>
+            <p class="service-desc">Turn Attention Into Customers. Build predictable growth with data-driven marketing strategies designed to increase reach, generate leads, and improve conversions.</p>
+            <ul class="service-benefits">
+              <li>✦ Growth Campaign Strategy</li><li>✦ Conversion Optimization</li><li>✦ Audience Targeting</li><li>✦ Performance Tracking</li>
+            </ul>
+            <div class="service-price-tag">
+              <span class="price-label">Starting From</span>
+              <span class="price-val">₹4999</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top-cta">
+              <a href="digital-marketing-projects.html" class="btn-mini-cta">Explore Projects →</a>
+            </div>
+            <div class="card-image-placeholder">
+              <span class="img-inner-glow"><img src="images/Digital marketing.jpeg" alt="Digital Marketing"></span>
+            </div>
+            <a href="#" class="btn-book-now open-modal-trigger" data-service="Digital Marketing">Book Now</a>
+          </div>
+        </div>
+
+        <div class="service-split-card" data-service-card>
+          <div class="card-left">
+            <span class="card-num">04</span>
+            <h3 class="service-name">Content Optimization</h3>
+            <p class="service-desc">Make Every Piece of Content Work Harder. Transform existing content into powerful growth assets that attract more traffic, engagement, and conversions.</p>
+            <ul class="service-benefits">
+              <li>✦ SEO-Driven Content Enhancement</li><li>✦ Conversion-Focused Copy</li><li>✦ Engagement Optimization</li><li>✦ Content Performance Audits</li>
+            </ul>
+            <div class="service-price-tag">
+              <span class="price-label">Starting From</span>
+              <span class="price-val">₹999</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top-cta">
+              <a href="content-optimization-projects.html" class="btn-mini-cta">Explore Projects →</a>
+            </div>
+            <div class="card-image-placeholder">
+              <span class="img-inner-glow"><img src="images/Content optimisation.jpeg" alt="Content Optimization"></span>
+            </div>
+            <a href="#" class="btn-book-now open-modal-trigger" data-service="Content Optimization">Book Now</a>
+          </div>
+        </div>
+
+        <div class="service-split-card" data-service-card>
+          <div class="card-left">
+            <span class="card-num">05</span>
+            <h3 class="service-name">Brand Growth Strategy</h3>
+            <p class="service-desc">Build a Brand People Remember and Trust. Create a growth roadmap that positions your business as the obvious choice in your market.</p>
+            <ul class="service-benefits">
+              <li>✦ Market Positioning</li><li>✦ Competitive Analysis</li><li>✦ Growth Planning</li><li>✦ Audience Insights</li>
+            </ul>
+            <div class="service-price-tag">
+              <span class="price-label">Starting From</span>
+              <span class="price-val">₹1499</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top-cta">
+              <a href="brand-strategy-projects.html" class="btn-mini-cta">Explore Projects →</a>
+            </div>
+            <div class="card-image-placeholder">
+              <span class="img-inner-glow"><img src="images/Brand growth statergy.jpeg" alt="Brand Growth Strategy"></span>
+            </div>
+            <a href="#" class="btn-book-now open-modal-trigger" data-service="Brand Growth Strategy">Book Now</a>
+          </div>
+        </div>
+
+        <div class="service-split-card" data-service-card>
+          <div class="card-left">
+            <span class="card-num">06</span>
+            <h3 class="service-name">Brand Storytelling</h3>
+            <p class="service-desc">Make Customers Feel Connected Before They Buy. Craft a compelling brand narrative that builds trust, emotional connection, and long-term loyalty.</p>
+            <ul class="service-benefits">
+              <li>✦ Brand Messaging Framework</li><li>✦ Founder Story Development</li><li>✦ Customer-Centric Narratives</li><li>✦ Identity Building</li>
+            </ul>
+            <div class="service-price-tag">
+              <span class="price-label">Starting From</span>
+              <span class="price-val">₹2999</span>
+            </div>
+          </div>
+          <div class="card-right">
+            <div class="right-top-cta">
+              <a href="brand-storytelling-projects.html" class="btn-mini-cta">Explore Projects →</a>
+            </div>
+            <div class="card-image-placeholder">
+              <span class="img-inner-glow"><img src="images/Content optimisation.jpeg" alt=""></span>
+            </div>
+            <a href="#" class="btn-book-now open-modal-trigger" data-service="Brand Storytelling">Book Now</a>
+          </div>
+        </div>
+      </div>
+      <section class="fp-calc" id="calculator">
+    <div class="fp-calc-header">
+      <div class="section-tag">Pricing Calculator</div>
+      <h2 class="section-title">Estimate Your <em>Monthly Cost</em></h2>
+      <p class="section-subtitle">Adjust team size, plan, and add-ons to see a sample estimate.</p>
+    </div>
+    <div class="fp-calc-card">
+      <div class="fp-calc-controls">
+        <div class="fp-field">
+          <label for="fpTeam">Team size <strong id="fpTeamVal">10</strong> members</label>
+          <input type="range" id="fpTeam" min="1" max="100" value="10" />
+        </div>
+        <div class="fp-field">
+          <span class="fp-field-label">Plan</span>
+          <div class="fp-seg" id="fpPlan">
+            <button type="button" class="fp-seg-btn" data-plan="starter">Starter</button>
+            <button type="button" class="fp-seg-btn active" data-plan="growth">Growth</button>
+            <button type="button" class="fp-seg-btn" data-plan="scale">Scale</button>
+          </div>
+        </div>
+        <div class="fp-field">
+          <span class="fp-field-label">Billing</span>
+          <div class="fp-seg" id="fpBilling">
+            <button type="button" class="fp-seg-btn active" data-bill="monthly">Monthly</button>
+            <button type="button" class="fp-seg-btn" data-bill="yearly">Yearly</button>
+          </div>
+        </div>
+        <div class="fp-field">
+          <span class="fp-field-label">Add-ons</span>
+          <label class="fp-check"><input type="checkbox" class="fp-addon" data-price="199" /><span>Advanced Reports</span><em>+199 / mo</em></label>
+          <label class="fp-check"><input type="checkbox" class="fp-addon" data-price="299" /><span>Automation Pack</span><em>+299 / mo</em></label>
+          <label class="fp-check"><input type="checkbox" class="fp-addon" data-price="149" /><span>Priority Support</span><em>+149 / mo</em></label>
+        </div>
+      </div>
+      <div class="fp-calc-result">
+        <span class="fp-result-label">Estimated total</span>
+        <div class="fp-result-price"><span>₹</span><b id="fpTotal">0</b><small id="fpPeriod">/ month</small></div>
+        <ul class="fp-breakdown" id="fpBreakdown"></ul>
+        <p class="fp-note">Fictional demo pricing for illustration only. No payment is collected.</p>
+        <a href="#" class="btn-primary open-modal-trigger" data-service="Pricing Estimate">
+          <span>Join Waitlist</span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+    </section>
+  </section>
+
+  <section class="portfolio" id="portfolio">
+    <div class="portfolio-header">
+      <div class="section-tag">Use Cases</div>
+      <h2 class="section-title">Built For <em>Every Team</em></h2>
+      <p class="section-subtitle">See how different teams can organize their work with FlowPilot.</p>
+    </div>
+    <div class="portfolio-grid" id="portfolioGrid"></div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="pricing-header">
+      <div class="section-tag">Pricing &amp; Plans</div>
+      <h2 class="section-title">Pick Your <em>Plan</em></h2>
+      <p class="section-subtitle">Simple, scalable pricing that grows with your team.</p>
+      <div class="pricing-toggle-wrapper">
+        <span class="toggle-label" id="toggleLabelMonthly">Monthly</span>
+        <label class="ios-toggle" for="planToggle" aria-label="Toggle billing period">
+          <input type="checkbox" id="planToggle" />
+          <span class="ios-toggle-track">
+            <span class="ios-toggle-thumb"></span>
+          </span>
+        </label>
+        <span class="toggle-label" id="toggleLabelYearly">Yearly <span class="toggle-save-badge">SAVE 20%</span></span>
+      </div>
+    </div>
+    <div class="pricing-grid" id="pricingGrid"></div>
+  </section>
+
+  <section class="testimonials" id="testimonials">
+    <div class="testimonials-header">
+      <div class="section-tag">Testimonials</div>
+      <h2 class="section-title">Team <em>Feedback</em></h2>
+    </div>
+    <div class="testimonials-layout">
+      <div class="phone-mockup-wrap" id="phoneMockup">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-app-header">
+              <div class="app-avatar" id="appAvatar">A</div>
+              <div class="app-meta">
+                <span class="app-name" id="appName">Anita R.</span>
+                <span class="app-role" id="appRole">Operations Lead, Sample Company</span>
+              </div>
+              <div class="app-stars">★★★★★</div>
+            </div>
+            <p class="app-review" id="appReview">"Sample feedback: FlowPilot gave our team one clear place to plan and track work."</p>
+            <div class="phone-dots" id="phoneDots">
+              <span class="phone-dot active"></span>
+              <span class="phone-dot"></span>
+              <span class="phone-dot"></span>
+              <span class="phone-dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonials-list" id="testimonialsList"></div>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="about-vision">
+      <div class="about-left-col">
+        <div class="section-tag">About FlowPilot</div>
+        <h2 class="section-title about-title">We Don't Just Track Tasks<br /><em>We Help Teams Flow.</em></h2>
+        <img src="images/team.svg" alt="FlowPilot workspace">
+      </div>
+      <div class="about-right-col">
+        <p class="about-body">The Founder &amp; Team
+
+FlowPilot was started by Karthik Raja with a simple idea: teams lose time not because they lack effort, but because their work is scattered across too many tools.
+
+We set out to build one calm, clear workspace where plans, tasks, and conversations live together. No clutter, no confusion, just a straightforward way to move work forward.
+
+Every part of FlowPilot is designed around the same belief: when everyone can see what matters and what is next, great work happens naturally. </p>
+        <div class="about-pillars">
+          <div class="pillar">
+            <span class="pillar-icon">✦</span>
+            <strong>Clarity</strong>
+            <p>One place to see what matters now.</p>
+          </div>
+          <div class="pillar">
+            <span class="pillar-icon">✦</span>
+            <strong>Simplicity</strong>
+            <p>Powerful tools that stay easy to use.</p>
+          </div>
+          <div class="pillar">
+            <span class="pillar-icon">∞</span>
+            <strong>Scale</strong>
+            <p>Workflows that grow with your team.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="team-section">
+      <div class="section-tag">Meet the Team</div>
+      <h3 class="team-title">The People. The Product. <em>The Passion.</em></h3>
+      <div class="team-carousel-outer">
+        <div class="team-grid" id="teamGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reels-section" id="reels">
+    <div class="reels-header">
+      <div class="section-tag">Product Showcase</div>
+      <h2 class="section-title">See FlowPilot <em>In Motion</em></h2>
+      <p class="section-subtitle">Short walkthroughs of how teams plan and ship work.</p>
+    </div>
+
+    <div class="reels-container">
+      <button class="reels-nav reels-prev" id="reelsPrev" aria-label="Previous">‹</button>
+      <div class="reels-track-wrap">
+        <div class="reels-track" id="reelsTrack">
+
+        <div class="reel-item">
+          <video class="reel-video" src="videos/v1.mp4" autoplay muted loop playsinline preload="auto"></video>
+          <div class="reel-placeholder">
+            <span class="reel-num">01</span>
+            <div class="reel-play">&#9654;&#xFE0E;</div>
+            <div class="reel-tag">Product Walkthrough 1</div>
+          </div>
+        </div>
+
+        <div class="reel-item">
+          <video class="reel-video" src="videos/v5.mp4" autoplay muted loop playsinline preload="auto"></video>
+          <div class="reel-placeholder">
+            <span class="reel-num">02</span>
+            <div class="reel-play">&#9654;&#xFE0E;</div>
+            <div class="reel-tag">Product Walkthrough 2</div>
+          </div>
+        </div>
+
+        <div class="reel-item">
+          <video class="reel-video" src="videos/v4.mp4" autoplay muted loop playsinline preload="auto"></video>
+          <div class="reel-placeholder">
+            <span class="reel-num">03</span>
+            <div class="reel-play">&#9654;&#xFE0E;</div>
+            <div class="reel-tag">Product Walkthrough 3</div>
+          </div>
+        </div>
+
+        <div class="reel-item">
+          <video class="reel-video" src="videos/v3.mp4" autoplay muted loop playsinline preload="auto"></video>
+          <div class="reel-placeholder">
+            <span class="reel-num">04</span>
+            <div class="reel-play">&#9654;&#xFE0E;</div>
+            <div class="reel-tag">Product Walkthrough 4</div>
+          </div>
+        </div>
+
+        <div class="reel-item">
+          <video class="reel-video" src="videos/v2.mp4" autoplay muted loop playsinline preload="auto"></video>
+          <div class="reel-placeholder">
+            <span class="reel-num">05</span>
+            <div class="reel-play">&#9654;&#xFE0E;</div>
+            <div class="reel-tag">Product Walkthrough 5</div>
+          </div>
+        </div>
+
+        <div class="reel-item">
+          <video class="reel-video" src="videos/v1.mp4" autoplay muted loop playsinline preload="auto"></video>
+          <div class="reel-placeholder">
+            <span class="reel-num">06</span>
+            <div class="reel-play">&#9654;&#xFE0E;</div>
+            <div class="reel-tag">Product Walkthrough 6</div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+      <button class="reels-nav reels-next" id="reelsNext" aria-label="Next">›</button>
+    </div>
+
+    <div class="reels-progress-line" id="reelsProgressLine">
+      <div class="reels-progress-fill" id="reelsProgressFill"></div>
+    </div>
+  </section>
+
+  <section class="creativity-section" id="creativity">
+    <div class="creativity-header">
+      <div class="section-tag">Visual Showcase</div>
+      <h2 class="section-title">Where <em>Work Comes Together</em></h2>
+      <p class="section-subtitle">Dashboards and views designed for clarity.</p>
+    </div>
+    <div class="creativity-grid">
+
+      <div class="creativity-poster tilt-card">
+        <img src="poster1.jpeg" alt="Showcase 1" loading="lazy" />
+        <div class="poster-overlay"></div>
+      </div>
+      <div class="creativity-poster tilt-card">
+        <img src="poster2.jpeg" alt="Showcase 2" loading="lazy" />
+        <div class="poster-overlay"></div>
+      </div>
+      <div class="creativity-poster tilt-card">
+        <img src="poster3.jpeg" alt="Showcase 3" loading="lazy" />
+        <div class="poster-overlay"></div>
+      </div>
+      <div class="creativity-poster tilt-card">
+        <img src="poster4.jpeg" alt="Showcase 4" loading="lazy" />
+        <div class="poster-overlay"></div>
+      </div>
+      <div class="creativity-poster tilt-card">
+        <img src="poster5.jpeg" alt="Showcase 5" loading="lazy" />
+        <div class="poster-overlay"></div>
+      </div>
+      <div class="creativity-poster tilt-card">
+        <img src="poster6.jpeg" alt="Showcase 6" loading="lazy" />
+        <div class="poster-overlay"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="faq-header">
+      <div class="section-tag">FAQ</div>
+      <h2 class="section-title">Common <em>Questions</em></h2>
+    </div>
+    <div class="faq-bubbles" id="faqBubbles"></div>
+    <div class="faq-list" id="faqAccordion"></div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="contact-inner">
+      <div class="contact-left">
+        <div class="section-tag">Contact Us</div>
+        <h2 class="section-title contact-title">Let's Streamline<br /><em>Your Workflow</em></h2>
+        <p class="contact-desc">Ready to bring your team into one clear workspace? Reach out and we will set up a walkthrough.</p>
+        <div class="contact-details">
+          <div class="contact-detail">
+            <span class="cd-icon">@</span>
+            <span>hello@flowpilot.app</span>
+          </div>
+          <div class="contact-detail">
+            <span class="cd-icon">24h</span>
+            <span>Response within 24 hours</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-right">
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="form-group">
+            <input type="text" class="form-input" id="contactName" placeholder=" " required />
+            <label class="form-label" for="contactName">Your Name</label>
+            <span class="form-underline"></span>
+          </div>
+          <div class="form-group">
+            <input type="email" class="form-input" id="contactEmail" placeholder=" " required />
+            <label class="form-label" for="contactEmail">Work Email</label>
+            <span class="form-underline"></span>
+          </div>
+          <div class="form-group">
+            <input type="tel" class="form-input" id="contactPhone" placeholder=" " required />
+            <label class="form-label" for="contactPhone">Mobile Number</label>
+            <span class="form-underline"></span>
+          </div>
+          <div class="form-group">
+            <textarea class="form-input form-textarea" id="contactMessage" placeholder=" " required></textarea>
+            <label class="form-label" for="contactMessage">Your Message</label>
+            <span class="form-underline"></span>
+          </div>
+          <p class="demo-note demo-note-light">Demo only: this form does not send or store any data.</p>
+          <button type="submit" class="btn-primary form-submit">
+            <span>Send Message</span>
+            <span class="btn-arrow">→</span>
+          </button>
+          <div class="contact-success" id="contactSuccess">
+            <div class="success-icon">✓</div>
+            <p>Message sent (demo only). No data was stored.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#home" class="footer-logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMDAgODAiPjxyZWN0IHg9IjIiIHk9IjgiIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgcng9IjE4IiBmaWxsPSIjQkZFM0Y3Ii8+PHBhdGggZD0iTTIwIDUyIEwzNCAyNCBMNDggNTIgWiIgZmlsbD0iI0ZGRkZGRiIvPjxwYXRoIGQ9Ik0yNiA1MiBMMzQgMzYgTDQyIDUyIFoiIGZpbGw9IiM5QUQzRjIiLz48dGV4dCB4PSI4MiIgeT0iNTIiIGZvbnQtZmFtaWx5PSJQbHVzIEpha2FydGEgU2FucywgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZvbnQtd2VpZ2h0PSI4MDAiIGxldHRlci1zcGFjaW5nPSItMSIgZmlsbD0iIzIzMjEyQiI+Rmxvd1BpbG90PC90ZXh0Pjwvc3ZnPg==" alt="FlowPilot" style="height: 40px; width: auto; display: block; background:#FFFFFF; border-radius:12px; padding:6px 12px;"></a>
+        <p>Clear workflows for modern teams.</p>
+        <p class="demo-note">FlowPilot is a fictional demo brand created for a website design project. Pricing, reviews, and team members are samples. Forms and checkout are demo-only; no payments or real data are collected.</p>
+        <div class="footer-social">
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="social-link" aria-label="Instagram">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" class="social-link" aria-label="LinkedIn">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Twitter/X">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.737l7.732-8.835L1.254 2.25H8.08l4.261 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#services"   class="footer-link">Features</a></li>
+            <li><a href="#portfolio"  class="footer-link">Use Cases</a></li>
+            <li><a href="#pricing"    class="footer-link">Pricing</a></li>
+            <li><a href="#calculator" class="footer-link">Calculator</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#about"   class="footer-link">About Us</a></li>
+            <li><a href="#faq"     class="footer-link">FAQ</a></li>
+            <li><a href="#contact" class="footer-link">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 FlowPilot. All rights reserved.</span>
+      <span>Built with care in Chennai, India.</span>
+    </div>
+  </footer>
+
+  <div class="enquiry-modal" id="enquiryModal" style="display:none;">
+    <div class="enquiry-backdrop" id="enquiryBackdrop"></div>
+    <div class="enquiry-panel">
+      <button class="enquiry-close" id="enquiryClose" aria-label="Close">✕</button>
+
+      <div class="enquiry-step active" data-step="1">
+        <div class="step-indicator">
+          <span class="step-num active">1</span>
+          <span class="step-line"></span>
+          <span class="step-num">2</span>
+          <span class="step-line"></span>
+          <span class="step-num">3</span>
+        </div>
+        <h3>Your Information</h3>
+        <p>Let us know who you are.</p>
+        <input type="text"  placeholder="Your Full Name"    class="enquiry-input" id="eq-name"  />
+        <input type="email" placeholder="Work Email"        class="enquiry-input" id="eq-email" />
+        <input type="tel"   placeholder="Phone (optional)"  class="enquiry-input" id="eq-phone" />
+        <button class="btn-primary enquiry-next" data-next="2">Next Step →</button>
+      </div>
+
+      <div class="enquiry-step" data-step="2">
+        <div class="step-indicator">
+          <span class="step-num done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step-num active">2</span>
+          <span class="step-line"></span>
+          <span class="step-num">3</span>
+        </div>
+        <h3>Your Needs</h3>
+        <p>Tell us what your team needs.</p>
+        <select class="enquiry-input enquiry-select" id="eq-service">
+          <option value="">Service Required</option>
+          <option>SEO • AEO • GEO</option>
+          <option>AI Automations</option>
+          <option>Digital Marketing</option>
+          <option>Content Optimization</option>
+          <option>Brand Growth Strategy</option>
+          <option>Brand Storytelling</option>
+          <option>Pricing Estimate</option>
+          <option>General Consultation</option>
+        </select>
+        <select class="enquiry-input enquiry-select" id="eq-budget">
+          <option value="">Team Size</option>
+          <option>1 - 5 members</option>
+          <option>6 - 20 members</option>
+          <option>21 - 50 members</option>
+          <option>51 - 100 members</option>
+          <option>100+ members</option>
+        </select>
+        <textarea placeholder="Describe your workflow needs..." class="enquiry-input enquiry-textarea" id="eq-needs"></textarea>
+        <button class="btn-primary enquiry-next" data-next="3">Next Step →</button>
+      </div>
+
+      <div class="enquiry-step" data-step="3">
+        <div class="step-indicator">
+          <span class="step-num done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step-num done">✓</span>
+          <span class="step-line active"></span>
+          <span class="step-num active">3</span>
+        </div>
+        <h3>Review &amp; Confirm</h3>
+        <p>Check your details before joining the waitlist.</p>
+        <div class="enquiry-summary-box" id="enquirySummary"></div>
+        <button class="btn-primary enquiry-submit" id="enquirySubmit">
+          <span>Join Waitlist</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+
+      <div class="enquiry-success" id="enquirySuccess">
+        <div class="success-icon">✓</div>
+        <h3>You Are on the Waitlist!</h3>
+        <p>Demo only: no data was sent or stored.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  const realFetch = window.fetch ? window.fetch.bind(window) : null;
+  window.fetch = function (url, opts) {
+    if (typeof url === "string" && (url.indexOf("/api/bookings") > -1 || url.indexOf("/api/contacts") > -1)) {
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          resolve({ ok: true, json: function () { return Promise.resolve({}); } });
+        }, 700);
+      });
+    }
+    return realFetch ? realFetch(url, opts) : Promise.reject(new Error("fetch unavailable"));
+  };
+})();
+const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:5000" : "https://api.flowpilot.app";
+
+const PORTFOLIO = [ {
+    label: "Product Roadmaps",
+        image: "images/project-1.jpg",
+    tag: "Product Teams",
+    large: true
+}, {
+    label: "Marketing Campaigns",
+        image: "images/project-2.jpg",
+    tag: "Marketing",
+    large: false
+}, {
+    label: "Client Onboarding",
+        image: "images/project-3.jpg",
+    tag: "Operations",
+    large: false
+}, {
+    label: "Sprint Planning",
+        image: "images/project-4.jpg",
+    tag: "Engineering",
+    wide: true
+}, {
+    label: "Content Calendars",
+        image: "images/project-5.jpg",
+    tag: "Creative",
+    large: false
+}, {
+    label: "Hiring Pipelines",
+        image: "images/project-6.jpg",
+    tag: "People Ops",
+    large: false
+} ];
+
+const PLANS_MONTHLY = [ {
+    name: "Starter",
+    price: "₹199",
+    period: "/user/month",
+    popular: false,
+    desc: "For small teams getting their work organized in one place.",
+    features: [ "Task and Project Boards", "Board and List Views", "Due Dates and Priorities", "Comments and Mentions", "Calendar Sync" ]
+}, {
+    name: "Growth",
+    price: "₹349",
+    period: "/user/month",
+    popular: true,
+    desc: "For growing teams that want workflows to run on their own.",
+    features: [ "Everything in Starter", "Visual Workflow Builder", "Rule-Based Automations", "Reusable Templates", "Progress Dashboards", "Role-Based Access" ]
+}, {
+    name: "Scale",
+    price: "₹549",
+    period: "/user/month",
+    popular: false,
+    desc: "For larger teams that need deeper insight and control.",
+    features: [ "Everything in Growth", "Workload Overview", "Team Activity Reports", "Exportable Summaries", "Open API Access", "Activity History" ]
+}, {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    popular: false,
+    desc: "A tailored setup for organizations with specific requirements.",
+    features: [ "Custom onboarding plan", "Dedicated walkthrough sessions", "Tailored integrations", "Flexible team size", "Priority support options" ]
+} ];
+
+const PLANS_YEARLY = [ {
+    name: "Starter",
+    price: "₹159",
+    period: "/user/month, billed yearly",
+    popular: false,
+    desc: "For small teams getting their work organized in one place.",
+    features: [ "Task and Project Boards", "Board and List Views", "Due Dates and Priorities", "Comments and Mentions", "Calendar Sync" ]
+}, {
+    name: "Growth",
+    price: "₹279",
+    period: "/user/month, billed yearly",
+    popular: true,
+    desc: "For growing teams that want workflows to run on their own.",
+    features: [ "Everything in Starter", "Visual Workflow Builder", "Rule-Based Automations", "Reusable Templates", "Progress Dashboards", "Role-Based Access" ]
+}, {
+    name: "Scale",
+    price: "₹439",
+    period: "/user/month, billed yearly",
+    popular: false,
+    desc: "For larger teams that need deeper insight and control.",
+    features: [ "Everything in Growth", "Workload Overview", "Team Activity Reports", "Exportable Summaries", "Open API Access", "Activity History" ]
+}, {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    popular: false,
+    desc: "A tailored setup for organizations with specific requirements.",
+    features: [ "Custom onboarding plan", "Dedicated walkthrough sessions", "Tailored integrations", "Flexible team size", "Priority support options" ]
+} ];
+
+const TESTIMONIALS = [ {
+    name: "Anita R.",
+    role: "Operations Lead, Sample Company",
+    review: '"Sample feedback: FlowPilot gave our team one clear place to plan work, assign tasks, and see what is next."'
+}, {
+    name: "Rahul M.",
+    role: "Product Manager, Sample Company",
+    review: '"Sample feedback: The boards and workflow builder made our weekly planning noticeably simpler."'
+}, {
+    name: "Priya S.",
+    role: "Team Lead, Sample Company",
+    review: '"Sample feedback: Automations take care of the small repetitive steps so the team can focus on real work."'
+} ];
+
+const TEAM = [ {
+    name: "Karthik Raja",
+    role: "Founder & CEO",
+    bio: "Building calm, clear tools that help teams move work forward.",
+    image: "images/team-1.svg"
+}, {
+    name: "Meena Iyer",
+    role: "Head of Product Design",
+    bio: "Designing simple experiences that make complex work feel easy.",
+    image: "images/team-2.svg"
+}, {
+    name: "Arun Prakash",
+    role: "Lead Engineer",
+    bio: "Leading the platform that keeps every workflow fast and reliable.",
+    image: "images/team-3.svg"
+}, {
+    name: "Divya Nair",
+    role: "Customer Success Lead",
+    bio: "Helping teams get set up and get the most from FlowPilot.",
+    image: "images/team-4.svg"
+} ];
+
+const REELS = [ {
+    tag: "Workflow Builder Tour"
+}, {
+    tag: "Board Views"
+}, {
+    tag: "Automations Setup"
+}, {
+    tag: "Team Collaboration"
+}, {
+    tag: "Reports Overview"
+}, {
+    tag: "Getting Started"
+} ];
+
+const FAQS = [ {
+    q: "What is FlowPilot?",
+    a: "FlowPilot is a workflow and project management platform. It brings task boards, workflows, automations, and reports together so your team can plan and track work in one place."
+}, {
+    q: "Who is FlowPilot built for?",
+    a: "FlowPilot is built for teams of any size that want clearer planning and less manual follow-up, including product, marketing, operations, engineering, and people teams."
+}, {
+    q: "How does pricing work?",
+    a: "Plans are priced per team member per month. You can choose Starter, Growth, or Scale, and yearly billing is available at a lower monthly rate. Use the pricing calculator to estimate your cost."
+}, {
+    q: "Can I try FlowPilot before choosing a plan?",
+    a: "The best way to start is to request a demo. We will walk you through the platform and help you decide which plan fits your team."
+}, {
+    q: "What is the difference between the plans?",
+    a: "Starter covers boards and everyday task management. Growth adds the visual workflow builder, automations, and dashboards. Scale adds deeper reports, workload views, and API access."
+}, {
+    q: "Does FlowPilot work with the tools we already use?",
+    a: "FlowPilot supports calendar sync, email notifications, and file attachments, and offers API access on the Scale plan so you can connect it with other tools."
+}, {
+    q: "Can I control who sees what?",
+    a: "Yes. Role-based access lets you decide who can view, edit, or manage each workspace and project."
+}, {
+    q: "How do I get started?",
+    a: "Request a demo using the Request Demo button or the contact form. Share a little about your team and we will set up a walkthrough with you."
+} ];
+
+let lenis;
+
+if (typeof Lenis !== "undefined") {
+    lenis = new Lenis({
+        duration: 1.2,
+        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+    });
+    function lenisRaf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(lenisRaf);
+    }
+    requestAnimationFrame(lenisRaf);
+    if (typeof ScrollTrigger !== "undefined") {
+        lenis.on("scroll", ScrollTrigger.update);
+        gsap.ticker.add(time => lenis.raf(time * 1e3));
+        gsap.ticker.lagSmoothing(0);
+    }
+}
+
+if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+}
+
+function initHeroParticles() {
+    const container = document.getElementById("heroParticles");
+    if (!container) return;
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement("div");
+        p.className = "hero-particle";
+        const size = Math.random() * 4 + 2;
+        p.style.cssText = `\n      width:${size}px; height:${size}px;\n      left:${Math.random() * 100}%;\n      animation-duration:${Math.random() * 8 + 6}s;\n      animation-delay:${Math.random() * 8}s;\n      opacity:${Math.random() * .5 + .2};\n    `;
+        container.appendChild(p);
+    }
+}
+
+function initHero() {
+    if (typeof gsap === "undefined") return;
+    gsap.set([ ".hero-eyebrow", ".hero-actions", ".hero-stats" ], {
+        y: 20,
+        opacity: 0
+    });
+    gsap.set(".word-wrap", {
+        y: "100%",
+        opacity: 0
+    });
+    const tl = gsap.timeline({
+        defaults: {
+            ease: "power3.out"
+        }
+    });
+    tl.to(".hero-eyebrow", {
+        opacity: 1,
+        y: 0,
+        duration: .7,
+        delay: .2
+    }).to(".word-wrap", {
+        y: 0,
+        opacity: 1,
+        duration: .9,
+        stagger: .12
+    }, "-=0.3").to(".hero-actions", {
+        opacity: 1,
+        y: 0,
+        duration: .7
+    }, "-=0.3").to(".hero-stats", {
+        opacity: 1,
+        y: 0,
+        duration: .7
+    }, "-=0.4");
+    if (typeof ScrollTrigger !== "undefined") {
+        const heroBg = document.getElementById("heroBg");
+        if (heroBg) {
+            gsap.to(heroBg, {
+                yPercent: 30,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "#home",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+        }
+        const orb1 = document.getElementById("heroOrb1");
+        const orb2 = document.getElementById("heroOrb2");
+        if (orb1) gsap.to(orb1, {
+            yPercent: -25,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#home",
+                start: "top top",
+                end: "bottom top",
+                scrub: 1
+            }
+        });
+        if (orb2) gsap.to(orb2, {
+            yPercent: -15,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#home",
+                start: "top top",
+                end: "bottom top",
+                scrub: 1.5
+            }
+        });
+        const heroContent = document.getElementById("heroContent");
+        if (heroContent) {
+            gsap.to(heroContent, {
+                yPercent: 20,
+                opacity: 0,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "#home",
+                    start: "center top",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+        }
+    }
+    const hero = document.querySelector(".hero");
+    if (hero) {
+        hero.addEventListener("mousemove", e => {
+            const {left: left, top: top, width: width, height: height} = hero.getBoundingClientRect();
+            const xRatio = (e.clientX - left - width / 2) / (width / 2);
+            const yRatio = (e.clientY - top - height / 2) / (height / 2);
+            const o1 = document.getElementById("heroOrb1");
+            const o2 = document.getElementById("heroOrb2");
+            const o3 = document.getElementById("heroOrb3");
+            if (o1) gsap.to(o1, {
+                x: xRatio * -30,
+                y: yRatio * -20,
+                duration: 1.5,
+                ease: "power2.out"
+            });
+            if (o2) gsap.to(o2, {
+                x: xRatio * 25,
+                y: yRatio * 18,
+                duration: 1.5,
+                ease: "power2.out"
+            });
+            if (o3) gsap.to(o3, {
+                x: xRatio * -15,
+                y: yRatio * -25,
+                duration: 1.5,
+                ease: "power2.out"
+            });
+        }, {
+            passive: true
+        });
+    }
+    const bigText = document.getElementById("scrollLargeText");
+    if (bigText && typeof ScrollTrigger !== "undefined") {
+        gsap.set(bigText, {
+            xPercent: -50,
+            yPercent: 35
+        });
+        gsap.to(bigText, {
+            yPercent: -45,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#about",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1.5,
+                invalidateOnRefresh: true
+            }
+        });
+    }
+}
+
+(function initCursor() {
+    const dot = document.getElementById("cursorDot");
+    const ring = document.getElementById("cursorRing");
+    if (!dot || !ring) return;
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener("mousemove", e => {
+        mx = e.clientX;
+        my = e.clientY;
+    }, {
+        passive: true
+    });
+    function tick() {
+        dot.style.left = mx + "px";
+        dot.style.top = my + "px";
+        rx += (mx - rx) * .12;
+        ry += (my - ry) * .12;
+        ring.style.left = rx + "px";
+        ring.style.top = ry + "px";
+        requestAnimationFrame(tick);
+    }
+    tick();
+    document.addEventListener("mouseleave", () => {
+        dot.style.opacity = "0";
+        ring.style.opacity = "0";
+    });
+    document.addEventListener("mouseenter", () => {
+        dot.style.opacity = "1";
+        ring.style.opacity = "0.6";
+    });
+    document.querySelectorAll("a, button").forEach(el => {
+        el.addEventListener("mouseenter", () => {
+            dot.style.width = "14px";
+            dot.style.height = "14px";
+            dot.style.background = "var(--accent-deep)";
+            ring.style.width = "50px";
+            ring.style.height = "50px";
+        });
+        el.addEventListener("mouseleave", () => {
+            dot.style.width = "";
+            dot.style.height = "";
+            dot.style.background = "";
+            ring.style.width = "";
+            ring.style.height = "";
+        });
+    });
+})();
+
+(function initNav() {
+    const nav = document.getElementById("mainNav");
+    const ham = document.getElementById("navHamburger");
+    const menu = document.getElementById("mobileMenu");
+    if (!nav) return;
+    window.addEventListener("scroll", () => {
+        nav.classList.toggle("scrolled", window.scrollY > 40);
+    }, {
+        passive: true
+    });
+    if (ham && menu) {
+        ham.addEventListener("click", () => {
+            menu.classList.toggle("open");
+            ham.classList.toggle("active");
+        });
+        menu.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+            menu.classList.remove("open");
+            ham.classList.remove("active");
+        }));
+    }
+})();
+
+(function renderPortfolio() {
+    const grid = document.getElementById("portfolioGrid");
+    if (!grid) return;
+    grid.innerHTML = PORTFOLIO.map((p, i) => `\n    <div class="portfolio-item${p.large ? " portfolio-item-large" : ""}${p.wide ? " portfolio-item-wide" : ""}">\n      <div class="portfolio-placeholder">
+        ${p.image ? `<img class="proj-img" src="${p.image}" alt="${p.label}" loading="lazy" onerror="this.remove()">` : ''}\n        <span class="placeholder-num">0${i + 1}</span>\n        <span class="placeholder-label">${p.label}</span>\n        <span class="placeholder-tag">${p.tag}</span>\n      </div>\n      <div class="portfolio-overlay">\n        <h3>${p.label}</h3>\n        <p>${p.tag}</p>\n      </div>\n    </div>`).join("");
+})();
+
+let isYearly = false;
+
+function renderPricing() {
+    const grid = document.getElementById("pricingGrid");
+    if (!grid) return;
+    const plans = isYearly ? PLANS_YEARLY : PLANS_MONTHLY;
+    grid.innerHTML = plans.map(p => `\n    <div class="pricing-card${p.popular ? " popular" : ""}">\n      ${p.popular ? '<div class="popular-badge">Most Popular</div>' : ""}\n      <div class="plan-name">${p.name}</div>\n      <div class="plan-price">${p.price.startsWith("₹") ? "<span>₹</span>" + p.price.slice(1) : p.price}</div>\n      <div class="plan-period">${p.period}</div>\n      <div class="plan-divider"></div>\n      <p class="plan-desc">${p.desc}</p>\n      <ul class="plan-features">${p.features.map(f => `<li>${f}</li>`).join("")}</ul>\n      <button class="btn-primary plan-cta open-modal-trigger" data-service="${p.name} Plan">Join Waitlist →</button>\n    </div>`).join("");
+    initPricingTilt();
+    revealObserve(".pricing-card");
+}
+
+renderPricing();
+
+function initPricingTilt() {
+    if (typeof gsap === "undefined") return;
+    document.querySelectorAll(".pricing-card").forEach(card => {
+        card.addEventListener("mousemove", e => {
+            const {left: left, top: top, width: width, height: height} = card.getBoundingClientRect();
+            const angleX = (height / 2 - (e.clientY - top)) / (height / 2) * 12;
+            const angleY = (e.clientX - left - width / 2) / (width / 2) * 12;
+            gsap.to(card, {
+                rotateX: angleX,
+                rotateY: angleY,
+                transformPerspective: 1e3,
+                scale: 1.03,
+                ease: "power2.out",
+                duration: .4,
+                boxShadow: "0 30px 80px rgba(154,211,242,0.35)"
+            });
+        });
+        card.addEventListener("mouseleave", () => {
+            gsap.to(card, {
+                rotateX: 0,
+                rotateY: 0,
+                scale: 1,
+                ease: "power2.out",
+                duration: .6,
+                boxShadow: ""
+            });
+        });
+    });
+}
+
+(function initPricingToggle() {
+    const toggle = document.getElementById("planToggle");
+    if (!toggle) return;
+    toggle.addEventListener("change", () => {
+        isYearly = toggle.checked;
+        renderPricing();
+    });
+})();
+
+(function renderTestimonials() {
+    const list = document.getElementById("testimonialsList");
+    if (!list) return;
+    list.innerHTML = TESTIMONIALS.map((t, i) => `\n    <div class="testimonial-card${i === 0 ? " active" : ""}" data-idx="${i}">\n      <p>${t.review}</p>\n      <div class="tcard-author">\n        <div class="tcard-avatar">${t.name[0]}</div>\n        <div>\n          <strong>${t.name}</strong>\n          <span>${t.role}</span>\n        </div>\n      </div>\n    </div>`).join("");
+    let cur = 0;
+    function showTestimonial(idx) {
+        cur = idx;
+        document.querySelectorAll(".testimonial-card").forEach((c, i) => c.classList.toggle("active", i === idx));
+        const el = id => document.getElementById(id);
+        if (el("appAvatar")) el("appAvatar").textContent = TESTIMONIALS[idx].name[0];
+        if (el("appName")) el("appName").textContent = TESTIMONIALS[idx].name;
+        if (el("appRole")) el("appRole").textContent = TESTIMONIALS[idx].role;
+        if (el("appReview")) el("appReview").textContent = TESTIMONIALS[idx].review;
+        document.querySelectorAll(".phone-dot").forEach((d, i) => d.classList.toggle("active", i === idx));
+    }
+    list.addEventListener("click", e => {
+        const card = e.target.closest(".testimonial-card");
+        if (card) showTestimonial(+card.dataset.idx);
+    });
+    setInterval(() => showTestimonial((cur + 1) % TESTIMONIALS.length), 4e3);
+})();
+
+(function renderTeam() {
+    const grid = document.getElementById("teamGrid");
+    if (!grid) return;
+    const isMobile = () => window.innerWidth <= 768;
+    grid.innerHTML = TEAM.map(m => `\n    <div class="team-card">\n      <div class="team-card-inner">\n\n        <div class="team-card-front">\n          <div class="team-photo-placeholder">\n            <img src="${m.image}" alt="${m.name}" class="team-photo" onerror="this.style.display='none'">\n          </div>\n          <span class="team-photo-label">${isMobile() ? "Tap to Reveal" : "Hover to Reveal"}</span>\n        </div>\n\n        <div class="team-card-back">\n          <img src="${m.image}" alt="${m.name}" class="team-back-photo" onerror="this.style.display='none'">\n          <div class="team-back-name">${m.name}</div>\n          <div class="team-back-role">${m.role}</div>\n          <p class="team-back-bio">${m.bio}</p>\n          <a href="#contact" class="team-back-link">Connect →</a>\n        </div>\n\n      </div>\n    </div>\n  `).join("");
+    grid.querySelectorAll(".team-card").forEach(card => {
+        card.addEventListener("click", () => {
+            if (window.innerWidth <= 768) {
+                card.classList.toggle("flipped");
+            }
+        });
+    });
+    if (window.innerWidth <= 768) {
+        const outer = document.querySelector(".team-carousel-outer");
+        if (outer) {
+            const cards = grid.innerHTML;
+            grid.innerHTML += cards;
+            let scrollPos = 0;
+            const speed = .5;
+            function autoScroll() {
+                if (!outer) return;
+                scrollPos += speed;
+                if (scrollPos >= outer.scrollWidth / 2) scrollPos = 0;
+                outer.scrollLeft = scrollPos;
+                requestAnimationFrame(autoScroll);
+            }
+            let isTouch = false;
+            outer.addEventListener("touchstart", () => {
+                isTouch = true;
+            }, {
+                passive: true
+            });
+            outer.addEventListener("touchend", () => {
+                setTimeout(() => {
+                    isTouch = false;
+                    autoScroll();
+                }, 2e3);
+            }, {
+                passive: true
+            });
+            autoScroll();
+        }
+    }
+})();
+
+(function renderReels() {
+    const track = document.getElementById("reelsTrack");
+    if (!track) return;
+    track.innerHTML = REELS.map((r, i) => `\n    <div class="reel-item">\n      <div class="reel-placeholder">\n        <div class="reel-play">▶︎</div>\n        <span class="reel-num">0${i + 1}</span>\n      </div>\n      <div class="reel-tag">${r.tag}</div>\n    </div>`).join("");
+    let offset = 0;
+    const ITEM_W = 216;
+    const total = REELS.length;
+    const fill = document.getElementById("reelsProgressFill");
+    function updateReels() {
+        track.style.transform = `translateX(-${offset * ITEM_W}px)`;
+        if (fill) fill.style.width = offset / Math.max(1, total - 1) * 100 + "%";
+    }
+    document.getElementById("reelsNext")?.addEventListener("click", () => {
+        if (offset < total - 1) {
+            offset++;
+            updateReels();
+        }
+    });
+    document.getElementById("reelsPrev")?.addEventListener("click", () => {
+        if (offset > 0) {
+            offset--;
+            updateReels();
+        }
+    });
+})();
+
+(function renderFAQ() {
+    const acc = document.getElementById("faqAccordion");
+    if (!acc) return;
+    acc.innerHTML = FAQS.map(f => `\n    <div class="faq-item">\n      <button class="faq-question">\n        <span class="faq-q-text">${f.q}</span>\n        <span class="faq-icon">+</span>\n      </button>\n      <div class="faq-answer-wrap">\n        <p class="faq-answer">${f.a}</p>\n      </div>\n    </div>`).join("");
+    acc.addEventListener("click", e => {
+        const btn = e.target.closest(".faq-question");
+        if (!btn) return;
+        const item = btn.closest(".faq-item");
+        const isOpen = item.classList.contains("open");
+        acc.querySelectorAll(".faq-item.open").forEach(i => i.classList.remove("open"));
+        if (!isOpen) item.classList.add("open");
+    });
+    const bubbleContainer = document.getElementById("faqBubbles");
+    if (bubbleContainer) {
+        for (let i = 0; i < 6; i++) {
+            const b = document.createElement("div");
+            b.className = "faq-bubble";
+            const size = Math.random() * 180 + 80;
+            b.style.cssText = `\n        width:${size}px; height:${size}px;\n        top:${Math.random() * 100}%; left:${Math.random() * 100}%;\n        animation-duration:${Math.random() * 6 + 5}s;\n        animation-delay:${Math.random() * 4}s;\n      `;
+            bubbleContainer.appendChild(b);
+        }
+    }
+})();
+
+(function initCounters() {
+    const nums = document.querySelectorAll(".stat-num[data-count]");
+    if (!nums.length) return;
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            const end = +el.dataset.count;
+            const inc = end / (1500 / 16);
+            let cur = 0;
+            const timer = setInterval(() => {
+                cur = Math.min(cur + inc, end);
+                el.textContent = Math.floor(cur);
+                if (cur >= end) clearInterval(timer);
+            }, 16);
+            io.unobserve(el);
+        });
+    }, {
+        threshold: .5
+    });
+    nums.forEach(el => io.observe(el));
+})();
+
+(function initMarquee() {
+    const track = document.getElementById("marqueeTrack");
+    if (!track) return;
+    track.innerHTML += track.innerHTML;
+})();
+
+function revealObserve(selector) {
+    const els = document.querySelectorAll(selector);
+    const io = new IntersectionObserver(entries => {
+        entries.forEach((entry, idx) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            setTimeout(() => el.classList.add("in-view"), idx * 80);
+            io.unobserve(el);
+        });
+    }, {
+        threshold: .08,
+        rootMargin: "0px 0px -40px 0px"
+    });
+    els.forEach(el => io.observe(el));
+}
+
+function initReveal() {
+    revealObserve(".portfolio-item");
+    revealObserve(".pricing-card");
+    revealObserve(".testimonial-card");
+    revealObserve(".team-card");
+    revealObserve(".pillar");
+    revealObserve(".faq-item");
+    revealObserve(".service-split-card");
+    revealObserve(".contact-left");
+    revealObserve(".contact-right");
+}
+
+function initScrollAnimations() {
+    if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
+    gsap.from(".portfolio-header", {
+        y: 40,
+        opacity: 0,
+        duration: .8,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".portfolio-header",
+            start: "top 85%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".pricing-header", {
+        y: 40,
+        opacity: 0,
+        duration: .8,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".pricing-header",
+            start: "top 85%",
+            toggleActions: "play none none none"
+        }
+    });
+    const phone = document.querySelector(".phone-frame");
+    if (phone) {
+        gsap.to(phone, {
+            scale: 1,
+            opacity: 1,
+            duration: 1.2,
+            ease: "power4.out",
+            scrollTrigger: {
+                trigger: ".testimonials",
+                start: "top 70%",
+                toggleActions: "play none none none"
+            }
+        });
+    }
+    gsap.to(".testimonials", {
+        backgroundSize: "105%",
+        ease: "none",
+        scrollTrigger: {
+            trigger: ".testimonials",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1
+        }
+    });
+    gsap.from(".about-left-col .section-tag, .about-title", {
+        y: 50,
+        opacity: 0,
+        duration: .9,
+        stagger: .15,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".about-vision",
+            start: "top 80%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".reels-header", {
+        y: 40,
+        opacity: 0,
+        duration: .8,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".reels-header",
+            start: "top 85%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".reel-item", {
+        y: 60,
+        opacity: 0,
+        stagger: .12,
+        duration: .8,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".reels-track",
+            start: "top 85%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".faq-header", {
+        y: 40,
+        opacity: 0,
+        duration: .8,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".faq-header",
+            start: "top 85%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".contact-title, .contact-desc, .contact-detail", {
+        y: 30,
+        opacity: 0,
+        stagger: .1,
+        duration: .7,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".contact-inner",
+            start: "top 80%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".footer-brand, .footer-col", {
+        y: 30,
+        opacity: 0,
+        stagger: .1,
+        duration: .7,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".footer",
+            start: "top 90%",
+            toggleActions: "play none none none"
+        }
+    });
+    gsap.from(".services-section-title", {
+        y: 40,
+        opacity: 0,
+        duration: .8,
+        ease: "power3.out",
+        scrollTrigger: {
+            trigger: ".services-section-title",
+            start: "top 85%",
+            toggleActions: "play none none none"
+        }
+    });
+}
+
+const REELS_DATA = [ {
+    tag: "Workflow Builder Tour",
+    src: "videos/v1.mp4"
+}, {
+    tag: "Board Views",
+    src: "videos/v2.mp4"
+}, {
+    tag: "Automations Setup",
+    src: "videos/v3.mp4"
+}, {
+    tag: "Team Collaboration",
+    src: "videos/v4.mp4"
+}, {
+    tag: "Reports Overview",
+    src: "videos/v5.mp4"
+}, {
+    tag: "Getting Started",
+    src: "videos/v1.mp4"
+} ];
+
+function initReelsSystem() {
+    const track = document.getElementById("reelsTrack");
+    const prevBtn = document.getElementById("reelsPrev");
+    const nextBtn = document.getElementById("reelsNext");
+    const progressFill = document.getElementById("reelsProgressFill");
+    if (!track || !prevBtn || !nextBtn) return;
+    let currentIndex = 0;
+    function renderReelsDOM() {
+        track.innerHTML = REELS_DATA.map((reel, i) => `\n      <div class="reel-item" data-index="${i}">\n        <video class="reel-video" src="${reel.src}" loop muted playsinline preload="auto"></video>\n        \n        <div class="reel-placeholder">\n          <span class="reel-num">0${i + 1}</span>\n          <div class="reel-play">▶︎</div>\n          <div class="reel-tag">${reel.tag}</div>\n        </div>\n      </div>\n    `).join("");
+    }
+    renderReelsDOM();
+    const items = document.querySelectorAll(".reel-item");
+    const videos = document.querySelectorAll(".reel-video");
+    items.forEach((item, idx) => {
+        const video = item.querySelector(".reel-video");
+        const playIcon = item.querySelector(".reel-play");
+        if (video) {
+            video.play().then(() => {
+                if (playIcon) playIcon.style.opacity = "0.2";
+            }).catch(() => {
+                if (playIcon) playIcon.textContent = "▶";
+            });
+        }
+        item.addEventListener("click", e => {
+            e.preventDefault();
+            if (!video) return;
+            if (video.paused) {
+                videos.forEach(v => v.pause());
+                document.querySelectorAll(".reel-play").forEach(btn => btn.style.opacity = "1");
+                document.querySelectorAll(".reel-play").forEach(btn => btn.textContent = "\u25B6\uFE0E");
+                video.play();
+                if (playIcon) {
+                    playIcon.textContent = "\u275A\u275A";
+                    playIcon.style.opacity = "0";
+                }
+            } else {
+                video.pause();
+                if (playIcon) {
+                    playIcon.textContent = "▶";
+                    playIcon.style.opacity = "1";
+                }
+            }
+        });
+    });
+    function globalBypass() {
+        videos.forEach(v => {
+            if (v.paused) v.play().catch(() => {});
+        });
+        document.removeEventListener("click", globalBypass);
+        document.removeEventListener("touchstart", globalBypass);
+    }
+    document.addEventListener("click", globalBypass, {
+        passive: true
+    });
+    document.addEventListener("touchstart", globalBypass, {
+        passive: true
+    });
+    function updateSliderPosition() {
+        if (items.length === 0) return;
+        const itemWidth = items[0].offsetWidth;
+        if (itemWidth === 0) return;
+        const computedStyle = window.getComputedStyle(track);
+        const gap = parseInt(computedStyle.gap) || 24;
+        const totalMoveDistance = (itemWidth + gap) * currentIndex;
+        track.style.setProperty("transform", `translateX(-${totalMoveDistance}px)`, "important");
+        if (progressFill) {
+            const progressPercent = (currentIndex + 1) / REELS_DATA.length * 100;
+            progressFill.style.width = `${progressPercent}%`;
+        }
+    }
+    nextBtn.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        let visibleCards = window.innerWidth <= 768 ? 1 : window.innerWidth <= 1024 ? 2 : 4;
+        const maxIndex = REELS_DATA.length - visibleCards;
+        if (currentIndex < maxIndex) {
+            currentIndex++;
+        } else {
+            currentIndex = 0;
+        }
+        updateSliderPosition();
+    });
+    prevBtn.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        let visibleCards = window.innerWidth <= 768 ? 1 : window.innerWidth <= 1024 ? 2 : 4;
+        const maxIndex = REELS_DATA.length - visibleCards;
+        if (currentIndex > 0) {
+            currentIndex--;
+        } else {
+            currentIndex = maxIndex > 0 ? maxIndex : 0;
+        }
+        updateSliderPosition();
+    });
+    window.addEventListener("resize", updateSliderPosition);
+    setTimeout(updateSliderPosition, 400);
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initReelsSystem);
+} else {
+    initReelsSystem();
+}
+
+function initEnquiry() {
+    const modal = document.getElementById("enquiryModal");
+    const closeBtn = document.getElementById("enquiryClose");
+    const backdrop = document.getElementById("enquiryBackdrop");
+    if (!modal) return;
+    function openModal(serviceName) {
+        modal.querySelectorAll(".enquiry-step").forEach(s => s.classList.remove("active"));
+        const step1 = modal.querySelector('.enquiry-step[data-step="1"]');
+        if (step1) step1.classList.add("active");
+        const success = document.getElementById("enquirySuccess");
+        if (success) success.classList.remove("active", "show");
+        const svcSelect = document.getElementById("eq-service");
+        if (svcSelect && serviceName && serviceName !== "General Consultation" && serviceName !== "Premium Strategy") {
+            for (let opt of svcSelect.options) {
+                if (opt.text.includes(serviceName.replace(" Plan", ""))) {
+                    svcSelect.value = opt.value;
+                    break;
+                }
+            }
+        }
+        modal.classList.add("open");
+        document.body.style.overflow = "hidden";
+    }
+    function closeModal() {
+        modal.classList.remove("open");
+        document.body.style.overflow = "";
+        setTimeout(() => {
+            modal.style.display = "";
+        }, 400);
+    }
+    document.addEventListener("click", e => {
+        const trigger = e.target.closest(".open-modal-trigger, .btn-book-now");
+        if (!trigger) return;
+        e.preventDefault();
+        modal.style.display = "flex";
+        requestAnimationFrame(() => openModal(trigger.getAttribute("data-service") || "General Consultation"));
+    });
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (backdrop) backdrop.addEventListener("click", closeModal);
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeModal();
+    });
+    modal.addEventListener("click", e => {
+        const nextBtn = e.target.closest(".enquiry-next");
+        if (!nextBtn) return;
+        e.preventDefault();
+        const currentStep = nextBtn.closest(".enquiry-step");
+        if (!currentStep) return;
+        if (currentStep.dataset.step === "1") {
+            const name = document.getElementById("eq-name");
+            const email = document.getElementById("eq-email");
+            if (!name?.value.trim()) {
+                name.focus();
+                name.style.borderColor = "#e53e3e";
+                setTimeout(() => name.style.borderColor = "", 2e3);
+                return;
+            }
+            if (!email?.value.includes("@")) {
+                email.focus();
+                email.style.borderColor = "#e53e3e";
+                setTimeout(() => email.style.borderColor = "", 2e3);
+                return;
+            }
+        }
+        const nextNum = parseInt(currentStep.dataset.step) + 1;
+        if (nextNum === 3) {
+            const summaryEl = document.getElementById("enquirySummary");
+            if (summaryEl) {
+                const name = document.getElementById("eq-name")?.value || "—";
+                const email = document.getElementById("eq-email")?.value || "—";
+                const service = document.getElementById("eq-service")?.value || "—";
+                const budget = document.getElementById("eq-budget")?.value || "—";
+                const needs = document.getElementById("eq-needs")?.value || "—";
+                summaryEl.innerHTML = `\n          <strong>Name:</strong> ${name}<br>\n          <strong>Email:</strong> ${email}<br>\n          <strong>Service:</strong> ${service}<br>\n          <strong>Budget:</strong> ${budget}<br>\n          <strong>Notes:</strong> ${needs.slice(0, 120)}${needs.length > 120 ? "…" : ""}\n        `;
+            }
+        }
+        currentStep.classList.remove("active");
+        const nextStep = modal.querySelector(`.enquiry-step[data-step="${nextNum}"]`);
+        if (nextStep) nextStep.classList.add("active");
+    });
+    const submitBtn = document.getElementById("enquirySubmit");
+    if (submitBtn) {
+        submitBtn.addEventListener("click", async e => {
+            e.preventDefault();
+            const name = document.getElementById("eq-name")?.value.trim() || "";
+            const email = document.getElementById("eq-email")?.value.trim() || "";
+            const phone = document.getElementById("eq-phone")?.value.trim() || "";
+            const service = document.getElementById("eq-service")?.value || "";
+            const budget = document.getElementById("eq-budget")?.value || "";
+            const message = document.getElementById("eq-needs")?.value.trim() || "";
+            if (!name || !email || !service) return;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending…";
+            try {
+                const res = await fetch(`${API_BASE}/api/bookings`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        service: service,
+                        budget: budget,
+                        message: message
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    modal.querySelectorAll(".enquiry-step").forEach(s => s.classList.remove("active"));
+                    const success = document.getElementById("enquirySuccess");
+                    if (success) success.classList.add("show");
+                    setTimeout(closeModal, 2800);
+                } else {
+                    alert(data.error || "Something went wrong. Please try again.");
+                }
+            } catch (err) {
+                console.error("Booking API error:", err);
+                alert("Network error. Please check your connection and try again.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Join Waitlist →";
+            }
+        });
+    }
+}
+
+function initContactForm() {
+    const form = document.getElementById("contactForm");
+    if (!form) return;
+    form.addEventListener("submit", async e => {
+        e.preventDefault();
+        const name = document.getElementById("contactName")?.value.trim();
+        const email = document.getElementById("contactEmail")?.value.trim();
+        const phone = document.getElementById("contactPhone")?.value.trim();
+        const message = document.getElementById("contactMessage")?.value.trim();
+        if (!name || !email || !email.includes("@") || !message) {
+            form.style.animation = "none";
+            requestAnimationFrame(() => {
+                form.style.animation = "";
+            });
+            return;
+        }
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending…";
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/contacts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    message: message
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                const success = document.getElementById("contactSuccess");
+                if (success) success.classList.add("show");
+                form.reset();
+                setTimeout(() => {
+                    if (success) success.classList.remove("show");
+                }, 5e3);
+            } else {
+                alert(data.error || "Something went wrong. Please try again.");
+            }
+        } catch (err) {
+            console.error("Contact API error:", err);
+            alert("Network error. Please check your connection and try again.");
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Send Message →";
+            }
+        }
+    });
+}
+
+function initPhoneParallax() {
+    if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
+    const phoneMockup = document.getElementById("phoneMockup");
+    if (!phoneMockup) return;
+    gsap.to(phoneMockup, {
+        y: -40,
+        ease: "none",
+        scrollTrigger: {
+            trigger: ".testimonials",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1
+        }
+    });
+}
+
+function initPosterTilt() {
+    if (typeof gsap === "undefined") return;
+    document.querySelectorAll(".tilt-card").forEach(card => {
+        card.addEventListener("mousemove", e => {
+            const {left: left, top: top, width: width, height: height} = card.getBoundingClientRect();
+            const angleX = (height / 2 - (e.clientY - top)) / (height / 2) * 10;
+            const angleY = (e.clientX - left - width / 2) / (width / 2) * 10;
+            gsap.to(card, {
+                rotateX: angleX,
+                rotateY: angleY,
+                transformPerspective: 800,
+                scale: 1.04,
+                ease: "power2.out",
+                duration: .4,
+                boxShadow: "0 24px 60px rgba(0,0,0,0.18)"
+            });
+        });
+        card.addEventListener("mouseleave", () => {
+            gsap.to(card, {
+                rotateX: 0,
+                rotateY: 0,
+                scale: 1,
+                ease: "power2.out",
+                duration: .5,
+                boxShadow: ""
+            });
+        });
+    });
+}
+
+function initVideo() {
+    const videos = document.querySelectorAll(".hero-bg-video");
+    videos.forEach(video => {
+        video.muted = true;
+        video.playsInline = true;
+        const tryPlay = () => {
+            const p = video.play();
+            if (p !== undefined) p.catch(() => {
+                video.style.display = "none";
+            });
+        };
+        if (video.readyState >= 2) {
+            tryPlay();
+        } else {
+            video.addEventListener("loadeddata", tryPlay, {
+                once: true
+            });
+        }
+    });
+    document.addEventListener("touchstart", () => {
+        videos.forEach(v => {
+            if (v.paused) v.play().catch(() => {});
+        });
+    }, {
+        once: true,
+        passive: true
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const bigText = document.getElementById("scrollLargeText");
+    const aboutSection = document.getElementById("about");
+    if (bigText && aboutSection && bigText.parentElement !== aboutSection) {
+        bigText.remove();
+        aboutSection.prepend(bigText);
+    }
+    initVideo();
+    initHeroParticles();
+    initHero();
+    initReveal();
+    initScrollAnimations();
+    initEnquiry();
+    initContactForm();
+    initPhoneParallax();
+    initPosterTilt();
+});
+(function(){
+  var rates={starter:199,growth:349,scale:549};
+  var names={starter:'Starter',growth:'Growth',scale:'Scale'};
+  var yearlyFactor=0.8;
+  var state={plan:'growth',bill:'monthly'};
+  var team=document.getElementById('fpTeam');
+  var teamVal=document.getElementById('fpTeamVal');
+  var total=document.getElementById('fpTotal');
+  var period=document.getElementById('fpPeriod');
+  var list=document.getElementById('fpBreakdown');
+  if(!team||!total||!list)return;
+  function fmt(n){return Math.round(n).toLocaleString('en-IN');}
+  function calc(){
+    var members=parseInt(team.value,10);
+    var f=state.bill==='yearly'?yearlyFactor:1;
+    var seats=rates[state.plan]*members*f;
+    var addons=0;
+    var rows=['<li><span>'+names[state.plan]+' x '+members+' members</span><b>₹'+fmt(seats)+'</b></li>'];
+    document.querySelectorAll('.fp-addon').forEach(function(c){
+      if(c.checked){
+        var p=parseInt(c.getAttribute('data-price'),10)*f;
+        addons+=p;
+        rows.push('<li><span>'+c.parentNode.querySelector('span').textContent+'</span><b>₹'+fmt(p)+'</b></li>');
+      }
+    });
+    if(state.bill==='yearly')rows.push('<li><span>Yearly billing discount</span><b>20% applied</b></li>');
+    teamVal.textContent=members;
+    list.innerHTML=rows.join('');
+    var sum=seats+addons;
+    total.textContent=fmt(sum);
+    period.textContent='/ month';
+  }
+  team.addEventListener('input',calc);
+  document.querySelectorAll('.fp-addon').forEach(function(c){c.addEventListener('change',calc);});
+  function seg(id,attr,key){
+    var box=document.getElementById(id);
+    if(!box)return;
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('.fp-seg-btn');
+      if(!b)return;
+      box.querySelectorAll('.fp-seg-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      state[key]=b.getAttribute(attr);
+      calc();
+    });
+  }
+  seg('fpPlan','data-plan','plan');
+  seg('fpBilling','data-bill','bill');
+  calc();
+})();
+
+  </script>
+</body>
+</html>
